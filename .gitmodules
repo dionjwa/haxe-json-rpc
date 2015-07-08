@@ -1,0 +1,3 @@
+[submodule "lib/haxe-js-kit"]
+	path = lib/haxe-js-kit
+	url = https://github.com/clemos/haxe-js-kit

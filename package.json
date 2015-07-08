@@ -1,0 +1,28 @@
+{
+  "name": "haxe-jsonrpc",
+  "version": "0.0.1",
+  "description": "JSON remoting calls over http and websockets",
+  "author": "Dion Whitehead Amago <dion@transition9.com>",
+  "scripts": {
+    "pretest": "npm install",
+    "test": "./test/runtests.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dionjwa/haxe-json-rpc"
+  },
+  "bugs": {
+    "url": "https://github.com/dionjwa/haxe-json-rpc/issues"
+  },
+  "keywords": [
+    "haxe",
+    "json",
+    "json-rpc",
+    "jsonrpc"
+  ],
+  "dependencies": {
+    "source-map-support": "^0.3.2",
+    "ws": "^0.7.2"
+  },
+  "license": "MIT"
+}

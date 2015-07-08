@@ -1,0 +1,15 @@
+{
+  "name": "json-rpc",
+  "url" : "https://github.com/dionjwa/haxe-json-rpc",
+  "license": "MIT",
+  "tags": ["json", "json-rpc", "jsonrpc"],
+  "classPath": "src",
+  "description": "JSON remoting calls over http and websockets",
+  "version": "0.0.1",
+  "releasenote": "Initial release",
+  "contributors": ["dionjwa"],
+  "dependencies": {
+    "promhx": "",
+    "logshim": "0.0.1"
+  }
+}

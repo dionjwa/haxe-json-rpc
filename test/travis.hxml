@@ -1,0 +1,18 @@
+-debug
+
+-D travis
+-D nodejs
+-D include_server_logic
+
+-lib logshim
+-lib promhx-unit-test
+
+-cp lib/haxe-js-kit
+
+-cp src
+-cp test
+
+-main Tests
+
+-js build/nodejs_test.js
+
