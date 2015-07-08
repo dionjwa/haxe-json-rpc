@@ -1,0 +1,8 @@
+.DS_Store
+*.sublime-*
+\#*#
+node_modules
+*.zip
+build
+.haxelib
+build.hxml
