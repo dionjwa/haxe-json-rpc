@@ -1,0 +1,10 @@
+language: haxe
+# Install Node.js
+before_script:
+    - curl -sL https://deb.nodesource.com/setup_0.12 | sudo bash -
+    - sudo apt-get install -y nodejs
+    - npm install
+haxe:
+  - "3.2.0"
+hxml:
+  - test/travis.hxml

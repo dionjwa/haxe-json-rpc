@@ -16,3 +16,7 @@
 
 -js build/nodejs_test.js
 
+--next
+
+-cmd node build/nodejs_test.js
+
