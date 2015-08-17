@@ -9,7 +9,7 @@
   "releasenote": "Added WS config",
   "contributors": ["dionjwa"],
   "dependencies": {
-    "promhx": "1.0.19",
+    "promhx": "1.0.21",
     "logshim": "0.0.1"
   }
 }
