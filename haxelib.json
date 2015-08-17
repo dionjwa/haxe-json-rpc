@@ -5,8 +5,8 @@
   "tags": ["json", "json-rpc", "jsonrpc"],
   "classPath": "src",
   "description": "JSON remoting calls over http and websockets",
-  "version": "0.0.3",
-  "releasenote": "Fixed versions on dependencies",
+  "version": "0.0.5",
+  "releasenote": "Added WS config",
   "contributors": ["dionjwa"],
   "dependencies": {
     "promhx": "1.0.19",

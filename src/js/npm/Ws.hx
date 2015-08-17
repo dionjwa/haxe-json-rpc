@@ -12,7 +12,16 @@ typedef Config = {
 }
 
 typedef ServerConfig = {
-    var port :Int;
+    @:optional var port :Int;
+    @:optional var host :String;
+    @:optional var server :Server;
+    @:optional var verifyClient :Dynamic;
+    @:optional var handleProtocols :Dynamic;
+    @:optional var path :String;
+    @:optional var noServer :Bool;
+    @:optional var disableHixie :Bool;
+    @:optional var clientTracking :Bool;
+    @:optional var perMessageDeflate :Bool;
 }
 
 typedef ReceiveFlags = {
