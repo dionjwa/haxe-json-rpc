@@ -5,8 +5,14 @@ import haxe.Json;
 
 import promhx.Promise;
 import promhx.Deferred;
+import promhx.Stream;
 
 import t9.websockets.WebSocketConnection;
+
+typedef IncomingObj<T> = {>RequestDef,
+	@:optional var sendResponse :T->Void;
+	@:optional var sendError :ResponseError->Void;
+}
 
 class JsonRpcConnectionWebSocket
 	implements JsonRpcConnection
@@ -16,6 +22,8 @@ class JsonRpcConnectionWebSocket
 		return new JsonRpcConnectionWebSocket(url);
 	}
 
+	public var incoming (default, null) :Stream<IncomingObj<Dynamic>>;
+
 	public var ws (get, null):WebSocketConnection;
 
 	public function new(url)
@@ -23,8 +31,35 @@ class JsonRpcConnectionWebSocket
 		_url = url;
 		_promises = new Map();
 		_ws = new WebSocketConnection(_url);
-
 		_ws.registerOnMessage(onMessage);
+
+		_deferredIncomingMessages = new Deferred();
+		incoming = _deferredIncomingMessages.stream();
+	}
+
+	function handleIncomingMessage(message :RequestDef)
+	{
+		Log.info('handleIncomingMessage');
+		var incoming :IncomingObj<Dynamic> = cast message;
+		if (message.id != null) {
+			incoming.sendResponse = function(val :Dynamic) {
+				var response :ResponseDefSuccess<Dynamic> = {id:message.id, jsonrpc:'2.0', result:val};
+				var responseString = Json.stringify(response);
+				getConnection()
+					.then(function(ws :WebSocketConnection) {
+						ws.send(responseString);
+					});
+			};
+			incoming.sendError = function(err :ResponseError) {
+				var responseErrorDef :ResponseDefError = {id:message.id, jsonrpc:'2.0', error:err};
+				var errorString = Json.stringify(responseErrorDef);
+				getConnection()
+					.then(function(ws :WebSocketConnection) {
+						ws.send(errorString);
+					});
+			};
+		}
+		_deferredIncomingMessages.resolve(incoming);
 	}
 
 	function onMessage(data :String, ?flags :{binary:Bool})
@@ -40,7 +75,8 @@ class JsonRpcConnectionWebSocket
 				return;
 			}
 			if (json.method != null && (json.error == null && json.result == null)) {
-				Log.error('Cannot yet handle server sending json-rpc requests:"$data"');
+				handleIncomingMessage(json);
+				// Log.error('Cannot yet handle server sending json-rpc requests:"$data"');
 				return;
 			}
 			if (json.id == null) {
@@ -133,4 +169,5 @@ class JsonRpcConnectionWebSocket
 	var _idCount :Int = 0;
 	var _ws :WebSocketConnection;
 	var _promises :Map<String, {request: RequestDef, deferred:Deferred<ResponseDef>}>;
+	var _deferredIncomingMessages = new Deferred<IncomingObj<Dynamic>>();
 }
