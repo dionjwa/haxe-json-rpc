@@ -69,9 +69,6 @@ class WebSocketConnection
 		_onerror.push(onError);
 		var index = _onerror.length - 1;
 		return {dispose:function() {
-#if debug
-			Log.debug("WebSocketConnection removing onError");
-#end
 			_onerror[index] = null;
 		}};
 	}
@@ -81,9 +78,6 @@ class WebSocketConnection
 		_onopen.push(onOpen);
 		var index = _onopen.length - 1;
 		var disposable = {dispose:function() {
-#if debug
-			Log.info("WebSocketConnection removing onOpen");
-#end
 			_onopen[index] = null;
 		}};
 
@@ -98,15 +92,15 @@ class WebSocketConnection
 		return disposable;
 	}
 
-	// public function registerOnMessage(onMessage :Dynamic->Void) :{dispose:Void->Void}
-    public function registerOnMessage(onMessage :Dynamic->?ReceiveFlags->Void) :{dispose:Void->Void}
+#if nodejs
+	public function registerOnMessage(onMessage :Dynamic->?ReceiveFlags->Void) :{dispose:Void->Void}
+#else
+	public function registerOnMessage(onMessage :Dynamic->Void) :{dispose:Void->Void}
+#end
 	{
 		_onmessage.push(onMessage);
 		var index = _onmessage.length - 1;
 		return {dispose:function() {
-#if debug
-			Log.info("WebSocketConnection removing onMessage");
-#end
 			_onmessage[index] = null;
 		}};
 	}
@@ -116,9 +110,6 @@ class WebSocketConnection
 		_onclose.push(onClose);
 		var index = _onclose.length - 1;
 		return {dispose:function() {
-#if debug
-			Log.info("WebSocketConnection removing onClose");
-#end
 			_onclose[index] = null;
 		}};
 	}
@@ -223,9 +214,12 @@ class WebSocketConnection
 		var i = 0;
 		while (_onmessage != null && i < _onmessage.length) {
 			if (_onmessage[i] != null) {
-				try{
-					// _onmessage[i](event);
-                    _onmessage[i](event.data, null);
+				try {
+#if nodejs
+					_onmessage[i](event.data, null);
+#else
+					_onmessage[i](event);
+#end
 				} catch (e :Dynamic) {
 					Log.error(e);
 				}
@@ -323,7 +317,11 @@ class WebSocketConnection
 
 	var _onerror :Array<Dynamic->Void>;
 	var _onopen :Array<Void->Void>;
+#if nodejs
     var _onmessage :Array<Dynamic->?ReceiveFlags->Void>;
+#else
+	var _onmessage :Array<Dynamic->Void>;
+#end
     var _onclose :Array<Null<Dynamic>->Void>;
 	var _disposed :Bool;
 	var _isDisconnected :Bool;

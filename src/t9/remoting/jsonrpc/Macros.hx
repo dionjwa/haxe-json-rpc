@@ -98,7 +98,7 @@ class Macros
 															Reflect.setField($i{functionArgs[0].name}, pair.key, pair.val);
 														}
 													}
-													return cast _conn.call($v{className} + '.' + $v{field.name}, $i{functionArgs[0].name});
+													return cast _conn.request($v{className} + '.' + $v{field.name}, $i{functionArgs[0].name});
 												}
 											:
 												macro {
@@ -109,7 +109,7 @@ class Macros
 															Reflect.setField(args, pair.key, pair.val);
 														}
 													}
-													return cast _conn.call($v{className} + '.' + $v{field.name}, args);
+													return cast _conn.request($v{className} + '.' + $v{field.name}, args);
 												}
 								}),
 								pos: pos

@@ -6,5 +6,6 @@ import promhx.Promise;
 
 interface JsonRpcConnection
 {
-	public function call(method :String, ?params :Dynamic) :Promise<Dynamic>;
+	public function request(method :String, ?params :Dynamic) :Promise<Dynamic>;
+	public function notify(method :String, ?params :Dynamic) :Promise<Bool>;
 }

@@ -48,7 +48,7 @@ class RPCHttpTest extends PromiseTest
 		// var inputString1 = ''
 
 		httpServer.listen(port, function() {
-			clientConnection.call(Type.getClassName(TestService1) + '.foo1', {input:'inputString'})
+			clientConnection.request(Type.getClassName(TestService1) + '.foo1', {input:'inputString'})
 			.then(function(result :String) {
 				httpServer.close(function() {
 					if (result == 'inputStringdone') {

@@ -19,7 +19,7 @@ class JsonRpcConnectionHttp
 		_url = url;
 	}
 
-	public function call(method :String, ?params :Dynamic) :Promise<Dynamic>
+	public function request(method :String, ?params :Dynamic) :Promise<Dynamic>
 	{
 		var request :RequestDef = {
 			id: (++_idCount) + '',
@@ -33,6 +33,19 @@ class JsonRpcConnectionHttp
 					throw response.error;
 				}
 				return response.result;
+			});
+	}
+
+	public function notify(method :String, ?params :Dynamic) :Promise<Bool>
+	{
+		var request :RequestDef = {
+			method: method,
+			params: params,
+			jsonrpc: "2.0"
+		};
+		return callInternal(request)
+			.then(function(_) {
+				return true;
 			});
 	}
 
@@ -62,15 +75,19 @@ class JsonRpcConnectionHttp
 				responseData += chunk;
 			});
 			res.on('end', function () {
-				try {
-					var jsonRes = Json.parse(responseData);
-					deferred.resolve(jsonRes);
-				} catch(err :Dynamic) {
-					deferred.resolve({
-						id :request.id,
-						error: {code:-32603, message:'Invalid JSON was received by the client.', data:responseData},
-						jsonrpc: "2.0"
-					});
+				if (request.id != null) {
+					try {
+						var jsonRes = Json.parse(responseData);
+						deferred.resolve(jsonRes);
+					} catch(err :Dynamic) {
+						deferred.resolve({
+							id :request.id,
+							error: {code:-32603, message:'Invalid JSON was received by the client.', data:responseData},
+							jsonrpc: "2.0"
+						});
+					}
+				} else {
+					deferred.resolve(null);
 				}
 			});
 		});

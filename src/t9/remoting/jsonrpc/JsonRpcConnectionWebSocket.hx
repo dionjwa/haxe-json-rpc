@@ -64,7 +64,7 @@ class JsonRpcConnectionWebSocket
 		return _ws.getReady();
 	}
 
-	public function call(method :String, ?params :Dynamic) :Promise<Dynamic>
+	public function request(method :String, ?params :Dynamic) :Promise<Dynamic>
 	{
 		var request :RequestDef = {
 			id: (++_idCount) + '',
@@ -72,7 +72,7 @@ class JsonRpcConnectionWebSocket
 			params: params,
 			jsonrpc: "2.0"
 		};
-		return callInternal(request)
+		return callRequestInternal(request)
 			.then(function(response: ResponseDef) {
 				if (response.error != null) {
 					throw response.error;
@@ -81,7 +81,17 @@ class JsonRpcConnectionWebSocket
 			});
 	}
 
-	function callInternal(request :RequestDef) :Promise<ResponseDef>
+	public function notify(method :String, ?params :Dynamic) :Promise<Bool>
+	{
+		var request :RequestDef = {
+			method: method,
+			params: params,
+			jsonrpc: "2.0"
+		};
+		return callNotifyInternal(request);
+	}
+
+	function callRequestInternal(request :RequestDef) :Promise<ResponseDef>
 	{
 		var deferred = new Deferred<ResponseDef>();
 		var promise = deferred.promise();
@@ -93,6 +103,22 @@ class JsonRpcConnectionWebSocket
 		getConnection()
 			.then(function(ws :WebSocketConnection) {
 				ws.send(requestString);
+			});
+
+		return promise;
+	}
+
+	function callNotifyInternal(request :RequestDef) :Promise<Bool>
+	{
+		var deferred = new Deferred<Bool>();
+		var promise = deferred.promise();
+
+		var requestString = Json.stringify(request);
+
+		getConnection()
+			.then(function(ws :WebSocketConnection) {
+				ws.send(requestString);
+				deferred.resolve(true);
 			});
 
 		return promise;
