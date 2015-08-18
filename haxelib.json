@@ -5,7 +5,7 @@
   "tags": ["json", "json-rpc", "jsonrpc"],
   "classPath": "src",
   "description": "JSON remoting calls over http and websockets",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "releasenote": "Differentiate between JSONRPC requests and notifications",
   "contributors": ["dionjwa"],
   "dependencies": {
