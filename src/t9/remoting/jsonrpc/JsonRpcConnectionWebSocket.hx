@@ -62,12 +62,18 @@ class JsonRpcConnectionWebSocket
 		_deferredIncomingMessages.resolve(incoming);
 	}
 
+#if nodejs
 	function onMessage(data :String, ?flags :{binary:Bool})
+#else
+	function onMessage(data :String)
+#end
 	{
+#if nodejs
 		if (flags != null && flags.binary) {
 			Log.warn('Cannot handle binary websocket data, ignoring message');
 			return;
 		}
+#end
 		try {
 			var json :Dynamic = Json.parse(data);
 			if (json.jsonrpc != '2.0') {

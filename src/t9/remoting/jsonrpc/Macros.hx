@@ -128,10 +128,16 @@ class Macros
 		{
 			var _conn :t9.remoting.jsonrpc.JsonRpcConnection;
 			var _addToAllParams :Array<{key:String, val :Dynamic}>;
-			public function new(conn :t9.remoting.jsonrpc.JsonRpcConnection)
+
+			public function new()
+			{
+				_addToAllParams = [];
+			}
+
+			public function setConnection(conn :t9.remoting.jsonrpc.JsonRpcConnection)
 			{
 				_conn = conn;
-				_addToAllParams = [];
+				return this;
 			}
 
 			public function addToAllParams(key :String, val :Dynamic)

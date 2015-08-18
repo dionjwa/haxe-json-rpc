@@ -114,7 +114,11 @@ class WebSocketConnection
 		}};
 	}
 
-	public function send(data)
+#if nodejs
+	public function send(data : String)
+#else
+	public function send(data :String)
+#end
 	{
 		if (_socket != null && _socket.readyState == 1) {
 			_socket.send(data);
