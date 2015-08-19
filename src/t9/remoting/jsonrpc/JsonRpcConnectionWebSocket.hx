@@ -39,7 +39,6 @@ class JsonRpcConnectionWebSocket
 
 	function handleIncomingMessage(message :RequestDef)
 	{
-		Log.info('handleIncomingMessage');
 		var incoming :IncomingObj<Dynamic> = cast message;
 		if (message.id != null) {
 			incoming.sendResponse = function(val :Dynamic) {

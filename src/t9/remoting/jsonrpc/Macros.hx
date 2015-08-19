@@ -29,7 +29,7 @@ class Macros
 	  * and returns an instance of the newly created proxy class.
 	  */
 	macro
-	public static function buildRpcClient(classExpr: Expr, connection: Expr) :Expr
+	public static function buildRpcClient(classExpr: Expr) :Expr
 	{
 		var pos = Context.currentPos();
 
@@ -156,7 +156,7 @@ class Macros
 		haxe.macro.Context.defineType(c);
 		var type = TypeTools.toComplexType(Context.getType(proxyClassName));
 		var typePath :TypePath = {name:proxyClassName, pack:[], params:null, sub:null};
-		return macro new $typePath ($connection);
+		return macro new $typePath ();
 	}
 
 #if macro
