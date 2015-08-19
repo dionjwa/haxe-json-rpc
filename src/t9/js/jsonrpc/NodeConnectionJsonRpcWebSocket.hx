@@ -1,17 +1,8 @@
 package t9.js.jsonrpc;
 
-#if !nodejs
-#error
-#end
-
 import haxe.Json;
 import haxe.remoting.JsonRpc;
 import t9.remoting.jsonrpc.Context;
-
-import js.Node;
-import js.npm.Ws;
-
-using StringTools;
 
 class NodeConnectionJsonRpcWebSocket
 {

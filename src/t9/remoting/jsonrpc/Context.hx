@@ -55,6 +55,24 @@ class Context
 			});
 	}
 
+	public function handleMessage(message :String) :Promise<ResponseDef>
+	{
+		var request :RequestDef = null;
+		try {
+			request = Json.parse(message);
+		} catch (err :Dynamic) {
+			Log.error(err);
+			return Promise.promise(null);
+		}
+
+		if (request.jsonrpc == null || request.method == null) {
+			Log.info('Not a jsonrpc message=' + message);
+			return Promise.promise(null);
+		}
+
+		return handleRpcRequest(request);
+	}
+
 	public function handleRpcRequest(request :RequestDef) :Promise<ResponseDef>
 	{
 		if (_methods.exists(request.method)) {
