@@ -291,15 +291,12 @@ class WebSocketConnection
 		}
 		_keepAliveTimer = new Timer(_keepAliveMilliseconds);
 		_keepAliveTimer.run = function() {
-#if debug
-			Log.info("Keep alive ping");
-#end
 			if (_socket != null && _socket.readyState == 1) {
 #if debug
-				Log.info("sending ping");
+				// Log.info("sending ping");
 #end
 				#if nodejs
-					_socket.ping("hey");
+					_socket.ping("keep_alive");
 				#else
 					_socket.send("keep_alive");
 				#end

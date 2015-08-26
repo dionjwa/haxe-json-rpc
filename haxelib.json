@@ -5,8 +5,8 @@
   "tags": ["json", "json-rpc", "jsonrpc"],
   "classPath": "src",
   "description": "JSON remoting calls over http and websockets",
-  "version": "0.0.8",
-  "releasenote": "Differentiate between JSONRPC requests and notifications",
+  "version": "0.0.9",
+  "releasenote": "Fix client",
   "contributors": ["dionjwa"],
   "dependencies": {
     "promhx": "1.0.21",
