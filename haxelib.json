@@ -5,11 +5,11 @@
   "tags": ["json", "json-rpc", "jsonrpc"],
   "classPath": "src",
   "description": "JSON remoting calls over http and websockets",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "releasenote": "Fix client",
   "contributors": ["dionjwa"],
   "dependencies": {
     "promhx": "1.0.21",
-    "logshim": "0.0.1"
+    "logshim": "0.0.2"
   }
 }
