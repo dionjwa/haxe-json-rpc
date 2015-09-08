@@ -1,4 +1,4 @@
-https://travis-ci.org/dionjwa/haxe-json-rpc.svg?branch=v0.0.10
+[![Build Status](https://travis-ci.org/dionjwa/haxe-json-rpc.svg?branch=v0.0.11)](https://travis-ci.org/dionjwa/haxe-json-rpc)
 
 [haxe]: http://http://haxe.org
 [nodejs]:http://nodejs.org/
