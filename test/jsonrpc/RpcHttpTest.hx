@@ -13,7 +13,7 @@ import js.node.http.*;
 import promhx.Promise;
 import promhx.Deferred;
 
-class RpcHttpTest extends PromiseTest
+class RPCHttpTest extends PromiseTest
 {
 	public function new() {}
 
