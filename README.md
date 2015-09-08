@@ -1,3 +1,5 @@
+https://travis-ci.org/dionjwa/haxe-json-rpc.svg?branch=v0.0.10
+
 [haxe]: http://http://haxe.org
 [nodejs]:http://nodejs.org/
 [jsonrpc]:http://www.jsonrpc.org/specification

@@ -5,6 +5,7 @@
 -D include_server_logic
 
 -lib logshim
+-lib promhx
 -lib promhx-unit-test
 
 -cp lib/haxe-js-kit
