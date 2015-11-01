@@ -26,6 +26,7 @@ class JsonRpcExpressTools
 			rpcInternal(req, res, next, methods);
 		};
 	}
+
 	static function rpcInternal(req :Request, res :Response, methods :Map<String, RpcFunction>) :Void
 	{
 		res.setHeader('Content-Type', 'application/json');

@@ -59,6 +59,15 @@ class NodeConnectionJsonRpcHttp
 							}
 						}
 						res.end(Json.stringify(rpcResponse, null, '\t'));
+					})
+					.catchError(function(err) {
+						var responseError :ResponseDef = {
+							id :body.id,
+							error: {code:-32700, message:err},
+							jsonrpc: "2.0"
+						};
+						res.writeHead(500);
+						res.end(Json.stringify(responseError, null, '\t'));
 					});
 			} catch (e :Dynamic) {
 				var responseError :ResponseDef = {
