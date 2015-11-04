@@ -10,6 +10,9 @@ using Lambda;
 
 class Context
 {
+	@:allow(js.npm.JsonRpcExpressTools)
+	var _methods :Map<String, RequestDef->Promise<Dynamic>>;
+
 	public function new ()
 	{
 		_methods = new Map();
@@ -21,7 +24,7 @@ class Context
 	}
 
 	/**
-	 * Get all methods annotated with 'remote' and bind them to the service.
+	 * Get all methods annotated with 'rpc' and bind them to the service.
 	 */
 	public function registerService(service :Dynamic)
 	{
@@ -29,12 +32,12 @@ class Context
 		var metafields = haxe.rtti.Meta.getFields(type);
 		for (metafield in Reflect.fields(metafields)) {
 			var fieldData = Reflect.field(metafields, metafield);
-			if (Reflect.hasField(fieldData, "rpc")) {
+			if (Reflect.hasField(fieldData, 'rpc')) {
 				var methodName = Type.getClassName(type) + "." + metafield;
 				bindMethod(service, metafield, methodName);
 
 				//Also add the argument in case we want to use different names
-				var val = Reflect.field(Reflect.field(metafields, metafield), 'rpc');
+				var val = Reflect.field(Reflect.field(metafields, metafield), 'alias');
 				if (val != null) {
 					bindMethod(service, metafield, val);
 				}
@@ -55,23 +58,23 @@ class Context
 			});
 	}
 
-	public function handleMessage(message :String) :Promise<ResponseDef>
-	{
-		var request :RequestDef = null;
-		try {
-			request = Json.parse(message);
-		} catch (err :Dynamic) {
-			Log.error(err);
-			return Promise.promise(null);
-		}
+	// public function handleMessage(message :String) :Promise<ResponseDef>
+	// {
+	// 	var request :RequestDef = null;
+	// 	try {
+	// 		request = Json.parse(message);
+	// 	} catch (err :Dynamic) {
+	// 		Log.error(err);
+	// 		return Promise.promise(null);
+	// 	}
 
-		if (request.jsonrpc == null || request.method == null) {
-			Log.info('Not a jsonrpc message=' + message);
-			return Promise.promise(null);
-		}
+	// 	if (request.jsonrpc == null || request.method == null) {
+	// 		Log.info('Not a jsonrpc message=' + message);
+	// 		return Promise.promise(null);
+	// 	}
 
-		return handleRpcRequest(request);
-	}
+	// 	return handleRpcRequest(request);
+	// }
 
 	public function handleRpcRequest(request :RequestDef) :Promise<ResponseDef>
 	{
@@ -115,6 +118,4 @@ class Context
 			return Promise.promise(responseError);
 		}
 	}
-
-	var _methods :Map<String, RequestDef->Promise<Dynamic>>;
 }

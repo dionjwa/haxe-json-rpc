@@ -5,8 +5,8 @@
   "tags": ["json", "json-rpc", "jsonrpc", "websockets", "js", "javascript", "remoting"],
   "classPath": "src",
   "description": "JSON remoting calls over http and websockets",
-  "version": "0.0.15",
-  "releasenote": "Handle and return promise errors",
+  "version": "0.0.16",
+  "releasenote": "Better jsonrpc context express support",
   "contributors": ["dionjwa"],
   "dependencies": {
     "promhx": "1.0.21",

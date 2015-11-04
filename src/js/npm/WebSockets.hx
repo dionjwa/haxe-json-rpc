@@ -67,8 +67,8 @@ typedef WebSocketServerConfig = {
 }
 
 @:native("server")
+@:jsRequire('ws', 'server')
 extern class WebSocketServer extends EventEmitter
-    implements npm.Package.RequireNamespace<"websocket","*">
 {
     public function new(?serverConfig:WebSocketServerConfig):Void;
     public function mount(config :WebSocketServerConfig) :Void;

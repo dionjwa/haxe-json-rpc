@@ -1,15 +1,18 @@
 package js.npm;
 
 import haxe.Json;
+import haxe.remoting.JsonRpc;
 
-import js.npm.JsonRpc;
 import js.npm.Express;
 import js.npm.express.Request;
 import js.npm.express.Response;
 import js.npm.express.Middleware;
+import js.npm.express.BodyParser;
 import js.support.Callback;
 
 import promhx.Promise;
+
+import t9.remoting.jsonrpc.Context;
 
 using StringTools;
 
@@ -17,13 +20,17 @@ typedef RpcFunction=Dynamic->Promise<Dynamic>;
 
 class JsonRpcExpressTools
 {
+	public static function createRpcRouter(context :Context) //:Request->Response->(Void->Void)->Void
+	{
+		return rpc(context._methods);
+	}
 
 	// RPC end point. By the time you call this, you're sure
 	// its a JsonRpc call. I.e. there is no next() called
 	public static function rpc(methods :Map<String, RpcFunction>) :Request->Response->Void
 	{
 		return function(req :Request, res :Response) {
-			rpcInternal(req, res, next, methods);
+			rpcInternal(req, res, methods);
 		};
 	}
 
@@ -31,7 +38,9 @@ class JsonRpcExpressTools
 	{
 		res.setHeader('Content-Type', 'application/json');
 		var data :RequestDef;
-		var body :String = js.npm.connect.BodyParser.body(req);
+		var body :String = js.npm.express.BodyParser.body(req);
+		trace("body:" + body);
+		trace('body:', Json.stringify(body));
 		try {
 			data = Json.parse(body);
 		} catch (err :Dynamic) {
@@ -75,7 +84,6 @@ class JsonRpcExpressTools
 						jsonStringResult = Json.stringify({
 							jsonrpc: '2.0',
 							result: result,
-							error : null,
 							id: data.id
 						});
 						res.status(200);

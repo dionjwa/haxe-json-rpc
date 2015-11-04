@@ -111,7 +111,7 @@ class JsonRpcConnectionWebSocket
 			id: (++_idCount) + '',
 			method: method,
 			params: params,
-			jsonrpc: "2.0"
+			jsonrpc: '2.0'
 		};
 		return callRequestInternal(request)
 			.then(function(response: ResponseDef) {
@@ -127,7 +127,7 @@ class JsonRpcConnectionWebSocket
 		var request :RequestDef = {
 			method: method,
 			params: params,
-			jsonrpc: "2.0"
+			jsonrpc: '2.0'
 		};
 		return callNotifyInternal(request);
 	}

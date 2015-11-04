@@ -41,7 +41,7 @@ class JsonRpcConnectionHttp
 		var request :RequestDef = {
 			method: method,
 			params: params,
-			jsonrpc: "2.0"
+			jsonrpc: '2.0'
 		};
 		return callInternal(request)
 			.then(function(_) {
