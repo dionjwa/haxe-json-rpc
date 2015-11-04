@@ -39,8 +39,6 @@ class JsonRpcExpressTools
 		res.setHeader('Content-Type', 'application/json');
 		var data :RequestDef;
 		var body :String = js.npm.express.BodyParser.body(req);
-		trace("body:" + body);
-		trace('body:', Json.stringify(body));
 		try {
 			data = Json.parse(body);
 		} catch (err :Dynamic) {
