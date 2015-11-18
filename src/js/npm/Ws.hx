@@ -1,7 +1,9 @@
 package js.npm;
 
-import js.html.Float32Array;
+import haxe.DynamicAccess;
+import haxe.io.Float32Array;
 
+import js.Error;
 import js.Node;
 import js.node.http.Server;
 import js.node.events.EventEmitter;
@@ -32,8 +34,25 @@ typedef SendFlags = {
     var mask :Bool;
 }
 
-extern class WebSocket extends EventEmitter
-    implements npm.Package.Require<"ws","*">
+typedef Code=Int;
+typedef Message=String;
+typedef Flags={binary:Bool};
+typedef Data=Dynamic;
+
+/**
+    Enumeration of events emitted by the `WebSocketServer` objects
+**/
+@:enum abstract WebSocketEvent<T:haxe.Constraints.Function>(Event<T>) to Event<T> {
+    var Error : WebSocketEvent<Error->Void> = 'error';
+    var Close : WebSocketEvent<Code->Message->Void> = 'close';
+    var Message : WebSocketEvent<Data->Flags->Void> = 'message';
+    var Ping : WebSocketEvent<Data->Flags->Void> = 'ping';
+    var Pong : WebSocketEvent<Data->Flags->Void> = 'pong';
+    var Open : WebSocketEvent<Void->Void> = 'open';
+}
+
+@:jsRequire('ws')
+extern class WebSocket extends EventEmitter<WebSocket>
 {
     public static var CONNECTING :Int;
     public static var OPEN :Int;
@@ -42,6 +61,10 @@ extern class WebSocket extends EventEmitter
 
     public var readyState :Int;
     public var url :String;
+    public var protocolVersion :String;
+    public var supports :String;
+    public var upgradeReq :DynamicAccess<String>;
+    public var bytesReceived :Int;
 
     public function new(host:String, ?protocols :Dynamic, ?config :Config) :Void;
 
@@ -66,9 +89,17 @@ extern class WebSocket extends EventEmitter
     public function resume() :Void;
 }
 
-@:native("Server")
-extern class WebSocketServer extends EventEmitter
-    implements npm.Package.RequireNamespace<"ws","*">
+/**
+    Enumeration of events emitted by the `WebSocketServer` objects
+**/
+@:enum abstract WebSocketServerEvent<T:haxe.Constraints.Function>(Event<T>) to Event<T> {
+    var Connection : WebSocketServerEvent<WebSocket->Void> = 'connection';
+    var Headers : WebSocketServerEvent<DynamicAccess<String>->Void> = 'headers';
+    var Error : WebSocketServerEvent<Error->Void> = 'error';
+}
+
+@:jsRequire('ws', 'Server')
+extern class WebSocketServer extends EventEmitter<WebSocketServer>
 {
     public var clients :Array<WebSocket>;
 
@@ -79,13 +110,4 @@ extern class WebSocketServer extends EventEmitter
 
     public function onConnection(cb :WebSocket->Void) :Void;
     public function close() :Void;
-}
-
-class Constants
-{
-    inline public static var EVENT_CONNECTION = 'connection';
-    inline public static var EVENT_OPEN = 'open';
-    inline public static var EVENT_MESSAGE = 'message';
-    inline public static var EVENT_CLOSE = 'close';
-    inline public static var EVENT_ERROR = 'error';
 }

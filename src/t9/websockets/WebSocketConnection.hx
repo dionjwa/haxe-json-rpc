@@ -127,6 +127,11 @@ class WebSocketConnection
 		}
 	}
 
+	public function close()
+	{
+		dispose();
+	}
+
 	public function dispose()
 	{
 		_disposed = true;
@@ -252,10 +257,12 @@ class WebSocketConnection
 			}
 		}
 		if (_disposed) {
-			_socket.onerror = null;
-			_socket.onopen = null;
-			_socket.onmessage = null;
-			_socket.onclose = null;
+			if (_socket != null) {
+				_socket.onerror = null;
+				_socket.onopen = null;
+				_socket.onmessage = null;
+				_socket.onclose = null;
+			}
 		} else {
 			if (!_isDisconnected) {
 				var reconnectInterval = 0;

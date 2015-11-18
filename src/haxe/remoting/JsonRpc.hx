@@ -9,11 +9,24 @@ typedef JsonRpcMessage = {
 	var jsonrpc :String;
 }
 
-typedef RequestDef = { > JsonRpcMessage,
+typedef RequestDefTyped<T> = { > JsonRpcMessage,
 	var method :String;
 	@:optional var id :Dynamic;
-	@:optional var params :Dynamic;
+	@:optional var params :T;
 }
+
+typedef RequestDef = RequestDefTyped<Dynamic>;
+
+@:enum
+abstract JsonRpcErrorCode(Int) {
+  var ParseError = -32700;
+  var InvalidRequest = -32600;
+  var MethodNotFound = -32601;
+  var InvalidParams = -32602;
+  var InternalError = -32603;
+  //-32000 to -32099 Server error Reserved for implementation-defined server-errors.
+}
+
 
 typedef ResponseError = {
 	var code :Int;
