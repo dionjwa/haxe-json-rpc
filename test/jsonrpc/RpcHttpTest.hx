@@ -33,7 +33,7 @@ class RpcHttpTest extends PromiseTest
 
 		var connection = new NodeConnectionJsonRpcHttp(context);
 
-		var httpServer = Http.createServer(function(req:HttpServerReq, res:ServerResponse) {
+		var httpServer = Http.createServer(function(req:IncomingMessage, res:ServerResponse) {
 			connection.handleRequest(req, res);
 		});
 
@@ -76,7 +76,7 @@ class RpcHttpTest extends PromiseTest
 
 		var connection = new NodeConnectionJsonRpcHttp(context);
 
-		var httpServer = Http.createServer(function(req:HttpServerReq, res:ServerResponse) {
+		var httpServer = Http.createServer(function(req:IncomingMessage, res:ServerResponse) {
 			connection.handleRequest(req, res);
 		});
 
@@ -92,7 +92,7 @@ class RpcHttpTest extends PromiseTest
 				params: {input:'inputString'}
 			});
 			// An object of options to indicate where to post to
-			var postOptions :js.node.Url.UrlObj = cast {
+			var postOptions :HttpRequestOptions = cast {
 				host: 'localhost',
 				port: port,
 				path: '/',

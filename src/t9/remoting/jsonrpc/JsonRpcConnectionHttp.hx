@@ -1,5 +1,8 @@
 package t9.remoting.jsonrpc;
 
+import js.node.Url;
+import js.node.Http;
+
 import haxe.remoting.JsonRpc;
 import haxe.Json;
 
@@ -57,7 +60,7 @@ class JsonRpcConnectionHttp
 		var postData = Json.stringify(request);
 		// An object of options to indicate where to post to
 		var urlObj = js.node.Url.parse(_url);
-		var postOptions :js.node.Url.UrlObj = cast {
+		var postOptions :HttpRequestOptions = cast {
 			hostname: urlObj.hostname,
 			port: urlObj.port,
 			path: urlObj.path,

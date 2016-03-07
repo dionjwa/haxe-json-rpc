@@ -25,7 +25,7 @@ class NodeConnectionJsonRpcHttp
 		_context = ctx;
 	}
 
-	public function handleRequest (req :HttpServerReq, res :ServerResponse) :Bool
+	public function handleRequest (req :IncomingMessage, res :ServerResponse) :Bool
 	{
 		if (req.method != "POST" || req.headers[untyped "content-type"] != 'application/json-rpc') {
 			return false;

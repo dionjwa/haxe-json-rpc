@@ -14,7 +14,7 @@ class TestService1
 		return Promise.promise(args.input + "done");
 	}
 
-	@rpc('fooalias')
+	@rpc({alias:'fooalias'})
 	public function foo2(args :{input:String}) :Promise<String>
 	{
 		return Promise.promise(args.input + "done2");
