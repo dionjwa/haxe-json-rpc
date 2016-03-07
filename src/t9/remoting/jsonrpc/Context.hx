@@ -32,14 +32,14 @@ class Context
 		var metafields = haxe.rtti.Meta.getFields(type);
 		for (metafield in Reflect.fields(metafields)) {
 			var fieldData = Reflect.field(metafields, metafield);
+
 			if (Reflect.hasField(fieldData, 'rpc')) {
 				var methodName = Type.getClassName(type) + "." + metafield;
 				bindMethod(service, metafield, methodName);
-
 				//Also add the argument in case we want to use different names
-				var val = Reflect.field(Reflect.field(metafields, metafield), 'alias');
-				if (val != null) {
-					bindMethod(service, metafield, val);
+				var meta :RpcMetaData = Reflect.field(fieldData, 'rpc') != null ? Reflect.field(fieldData, 'rpc')[0] : null;
+				if (meta != null && meta.alias != null) {
+					bindMethod(service, metafield, meta.alias);
 				}
 			}
 		}
@@ -57,24 +57,6 @@ class Context
 				return promise;
 			});
 	}
-
-	// public function handleMessage(message :String) :Promise<ResponseDef>
-	// {
-	// 	var request :RequestDef = null;
-	// 	try {
-	// 		request = Json.parse(message);
-	// 	} catch (err :Dynamic) {
-	// 		Log.error(err);
-	// 		return Promise.promise(null);
-	// 	}
-
-	// 	if (request.jsonrpc == null || request.method == null) {
-	// 		Log.info('Not a jsonrpc message=' + message);
-	// 		return Promise.promise(null);
-	// 	}
-
-	// 	return handleRpcRequest(request);
-	// }
 
 	public function handleRpcRequest(request :RequestDef) :Promise<ResponseDef>
 	{

@@ -4,11 +4,10 @@
 -D nodejs
 -D include_server_logic
 
+-lib hxnodejs
 -lib logshim
 -lib promhx
--lib promhx-unit-test
-
--cp lib/haxe-js-kit
+-lib promhx-unit-test:1.1.4
 
 -cp src
 -cp test

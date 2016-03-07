@@ -1,7 +1,6 @@
 -debug
 
 -lib tink_macro
-# -lib json-rpc
 -lib promhx
 -lib hxnodejs
 

@@ -37,7 +37,7 @@ class RpcProxyTest extends PromiseTest
 							.setConnection(clientConnection);
 
 		//Set up the server and begin
-		var httpServer = Http.createServer(function(req:HttpServerReq, res:ServerResponse) {
+		var httpServer = Http.createServer(function(req:IncomingMessage, res:ServerResponse) {
 			serverConnection.handleRequest(req, res);
 		});
 

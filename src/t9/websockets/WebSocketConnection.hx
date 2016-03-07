@@ -270,11 +270,11 @@ class WebSocketConnection
 					case None:
 						Log.warn("No reconnects because ReconnectType==None");
 					case Repeat(intervalMilliseconds):
-						Log.debug("reconnecting");
+						// Log.debug("reconnecting");
 						reconnectInterval = intervalMilliseconds;
 					case Decay(intervalMilliseconds, intervalMultipler):
 						reconnectInterval = Std.int(intervalMilliseconds * (intervalMultipler * (_reconnectAttempts + 1)));
-						Log.debug("reconnecting");
+						// Log.debug("reconnecting");
 				}
 				if (reconnectInterval > 0) {
 					haxe.Timer.delay(
