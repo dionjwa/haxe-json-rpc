@@ -2,6 +2,7 @@ package t9.remoting.jsonrpc;
 
 import haxe.Json;
 import haxe.remoting.JsonRpc;
+import haxe.rtti.Meta;
 
 import promhx.Promise;
 import promhx.Deferred;
@@ -28,12 +29,9 @@ class Context
 	 */
 	public function registerService(service :Dynamic)
 	{
-		var type = switch(Type.typeof(service)) {
-			case TObject: Type.getClass(service);
-			case TClass(c): c;
-			default: throw 'Cannot add type ${Type.typeof(service)} as a service';
-		}
-		var metafields = haxe.rtti.Meta.getFields(type);
+		var type = Type.getClass(service) == null ? service : Type.getClass(service);
+		var metafields = Type.getClass(service) == null ? Meta.getStatics(type) : Meta.getFields(type);
+
 		for (metafield in Reflect.fields(metafields)) {
 			var fieldData = Reflect.field(metafields, metafield);
 

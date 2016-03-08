@@ -45,8 +45,6 @@ class RpcHttpTest extends PromiseTest
 
 		var clientConnection = new t9.remoting.jsonrpc.JsonRpcConnectionHttp('http://localhost:' + port);
 
-		// var inputString1 = ''
-
 		httpServer.listen(port, function() {
 			clientConnection.request(Type.getClassName(TestService1) + '.foo1', {input:'inputString'})
 			.then(function(result :String) {

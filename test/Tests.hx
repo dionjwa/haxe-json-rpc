@@ -6,6 +6,7 @@ class Tests
 	{
 		new haxe.unit.async.PromiseTestRunner()
 
+			.add(new jsonrpc.BasicsTest())
 			.add(new jsonrpc.RpcHttpTest())
 			.add(new jsonrpc.RpcProxyTest())
 			.add(new jsonrpc.RpcWebSocketTest())
