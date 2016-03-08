@@ -28,7 +28,11 @@ class Context
 	 */
 	public function registerService(service :Dynamic)
 	{
-		var type = Type.getClass(service);
+		var type = switch(Type.typeof(service)) {
+			case TObject: Type.getClass(service);
+			case TClass(c): c;
+			default: throw 'Cannot add type ${Type.typeof(service)} as a service';
+		}
 		var metafields = haxe.rtti.Meta.getFields(type);
 		for (metafield in Reflect.fields(metafields)) {
 			var fieldData = Reflect.field(metafields, metafield);
