@@ -5,14 +5,27 @@ import js.npm.Commander;
 
 using Lambda;
 
-class RpcTools
+class CommanderTools
 {
 	public static function parseCliArgs(definitions :Array<RemoteMethodDefinition>) :RequestDef
 	{
-		var request :RequestDef = null;
-
 		var program :Commander = js.Node.require('commander');
-		program.version('0.0.1');
+		var requestDef :RequestDef = null;
+
+		addCommands(program, definitions, function(def) {
+			requestDef = def;
+		});
+		if (js.Node.process.argv.slice(2).length == 0) {
+			program.outputHelp();
+		} else {
+			program.parse(js.Node.process.argv);
+		}
+
+		return requestDef;
+	}
+
+	public static function addCommands(program :Commander, definitions :Array<RemoteMethodDefinition>, jsonrpcCallback :RequestDef->Void)
+	{
 		for (definition in definitions) {
 			var commandName = definition.method;
 			for (arg in definition.args.filter(function(v) return !v.optional)) {
@@ -34,7 +47,7 @@ class RpcTools
 			command.action(function(arg1 :Dynamic, arg2 :Dynamic, arg3 :Dynamic, arg4 :Dynamic, arg5 :Dynamic, arg6 :Dynamic, arg7 :Dynamic) {
 				var options :{options:Dynamic} = getOptions(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
 				var arguments = getArguments(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
-				request = {
+				var request :RequestDef = {
 					jsonrpc: '2.0',
 					method: definition.method,
 					params: {}
@@ -49,16 +62,9 @@ class RpcTools
 						Reflect.setField(request.params, arg.name, Reflect.field(command, arg.name));
 					}
 				}
+				jsonrpcCallback(request);
 			});
 		}
-
-		if (js.Node.process.argv.slice(2).length == 0) {
-			program.outputHelp();
-		} else {
-			program.parse(js.Node.process.argv);
-		}
-
-		return request;
 	}
 
 	/**

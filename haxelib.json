@@ -5,7 +5,7 @@
   "tags": ["json", "json-rpc", "jsonrpc", "websockets", "js", "javascript", "remoting"],
   "classPath": "src",
   "description": "JSON remoting calls over http and websockets",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "releasenote": "Add CLI parser for sending JsonRpc requests to remote server",
   "contributors": ["dionjwa"],
   "dependencies": {
