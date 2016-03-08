@@ -22,12 +22,8 @@ class TestCLI extends PromiseTest
 		assertEquals(json.params.arg3, 'testVal');
 		assertEquals(json.params.arg4, true);
 
-		var out = untyped __js__('require("child_process").execSync("build/cli_test.js jsonrpc.cli.mock.Foo.foo 1 arg2 --arg3 testVal --arg4")');
+		var out = untyped __js__('require("child_process").execSync("build/cli_test.js jsonrpc.cli.mock.Foo.foo2")');
 		var json :RequestDef = Json.parse(out);
-		assertEquals(json.method, 'jsonrpc.cli.mock.Foo.foo');
-		assertEquals(json.params.arg1, 1);
-		assertEquals(json.params.arg2, 'arg2');
-		assertEquals(json.params.arg3, 'testVal');
-		assertEquals(json.params.arg4, true);
+		assertEquals(json.method, 'jsonrpc.cli.mock.Foo.foo2');
 	}
 }

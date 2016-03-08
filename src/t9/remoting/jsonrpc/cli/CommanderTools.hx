@@ -27,15 +27,12 @@ class CommanderTools
 	public static function addCommands(program :Commander, definitions :Array<RemoteMethodDefinition>, jsonrpcCallback :RequestDef->Void)
 	{
 		for (definition in definitions) {
-			var commandName = definition.method;
+			var commandName = definition.alias != null ? definition.alias : definition.method;
 			for (arg in definition.args.filter(function(v) return !v.optional)) {
 				commandName += ' <${arg.name}>';
 			}
 			var command = program.command(commandName);
 			command.description(definition.doc);
-			if (definition.alias != null) {
-				command.alias(definition.alias);
-			}
 			for (arg in definition.args.filter(function(v) return v.optional)) {
 				var optionalArgString = '--${arg.name} [${arg.name}]';
 				if (arg.short != null) {
