@@ -1,4 +1,4 @@
--debug
+-D no-traces
 
 -lib tink_macro
 -lib promhx
@@ -12,7 +12,3 @@
 -js build/cli_test.js
 
 -cmd echo '#!/usr/bin/env node' | cat - build/cli_test.js > temp && mv temp build/cli_test.js && chmod 755 build/cli_test.js
-
---next
-
--cmd build/cli_test.js aliasToFoo 1 arg2 --arg3 testVal --arg4
