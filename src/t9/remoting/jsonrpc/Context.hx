@@ -151,7 +151,6 @@ class Context
 				error: {code:-32601, message:'The method="${request.method}" does not exist / is not available. Available methods=[' + [for (s in _methods.keys()) s].join(',') + ']'},
 				jsonrpc: "2.0"
 			};
-			// trace('responseError$responseError');
 			return Promise.promise(responseError);
 		}
 	}

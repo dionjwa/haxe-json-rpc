@@ -43,7 +43,6 @@ class Macros
 		var classNames = [];
 		for (classExpression in classes) {
 			var typeof = MacroContext.typeof(classExpression);
-			trace('typeof=${typeof}');
 			var className = getClassNameFromClassExpr(classExpression);
 			if (className == null || className == "") {
 				MacroContext.error(className + " not found. Maybe specify the entire class identifier?", pos);
@@ -54,30 +53,13 @@ class Macros
 		return macro $v {remoteDefinitions};
 	}
 #if macro
-	/**
-	 * This takes in a number of classes (not instances) and extracts the
-	 * remoting methods in JSON method definitions that can then be used
-	 * by other tools.
-	 * @param  e<Expr> Classes to extract RPC method data.
-	 * @return         Array<RemoteMethodDefinition>
-	 */
 	public static function getMethodDefinitionsInternal(classes:Array<String>) :Array<RemoteMethodDefinition>
 	{
-		// trace('classes=${classes}');
 		var pos = haxe.macro.Context.currentPos();
 
 		var remoteDefinitions :Array<RemoteMethodDefinition> = [];
 
 		for (className in classes) {
-		// for (classExpression in classes) {
-
-			// var typeof = haxe.macro.Context.typeof(classExpression);
-			// trace('typeof=${typeof}');
-			// var className = t9.remoting.jsonrpc.Macros.getClassNameFromClassExpr(classExpression);
-			// if (className == null || className == "") {
-			// 	throw className + " not found. Maybe specify the entire class identifier?";
-			// }
-
 			var rpcType = haxe.macro.Context.getType(className);
 			var newFields = [];
 			var fields = [];
@@ -184,7 +166,6 @@ class Macros
 				}
 			}
 		}
-		// return macro $v {remoteDefinitions};
 		return remoteDefinitions;
 	}
 #end
@@ -225,20 +206,11 @@ class Macros
 							default: throw '"@rpc" metadata on a variable ${field.name}, only allowed on methods.';
 						}
 
-						// if (functionArgs.length > 1) {
-						// 	throw 'Current we only support passing in the entire params object';
-						// }
 						switch(field.kind) {
 							case FMethod(k):
 							default: throw '"@rpc" metadata on a variable ${field.name}, only allowed on methods.';
 						}
 
-						// var x = "{\n" +
-						// 					"var args = {};\n" +
-						// 					functionArgs.map(function(functionArg) return "Reflect.setField(args, '" + functionArg.name + "', " + functionArg.name + ");").join('\n') +
-						// 					"\nreturn cast _conn.request('" + className + '.' + field.name +"', args);\n" +
-						// 					"}";
-						// trace(x);
 						newFields.push(
 							{
 								name: field.name,
@@ -264,27 +236,14 @@ class Macros
 													TPType(TypeTools.toComplexType(promiseType))
 												]
 										}),
-									expr : 
+									expr :
 										Context.parse(
 											"{\n" +
-											"var args = {};\n" +
-											functionArgs.map(function(functionArg) return "Reflect.setField(args, '" + functionArg.name + "', " + functionArg.name + ");").join('\n') +
-											"\nreturn cast _conn.request('" + className + '.' + field.name +"', args);\n" +
+												"var args = {};\n" +
+												functionArgs.map(function(functionArg) return "Reflect.setField(args, '" + functionArg.name + "', " + functionArg.name + ");").join('\n') +
+												"\nreturn cast _conn.request('" + className + '.' + field.name +"', args);\n" +
 											"}"
 											, pos)
-										// macro {
-										// 	var args = {};
-										// 	// for (functionArg in functionArgs) {
-										// 	// 	Reflect.setField(args, '${functionArg.name}', $i{functionArgs[0].name})
-										// 	// }
-										// 	// if (_addToAllParams.length > 0) {
-										// 	// 	for(pair in _addToAllParams) {
-										// 	// 		Reflect.setField($i{functionArgs[0].name}, pair.key, pair.val);
-										// 	// 	}
-										// 	// }
-										// 	// return cast _conn.request($v{className} + '.' + $v{field.name}, $i{args});
-										// 	return cast _conn.request($v{className} + '.' + $v{field.name}, $i{functionArgs[0].name});
-										// }
 								}),
 								pos: pos
 							}
