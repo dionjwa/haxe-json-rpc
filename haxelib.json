@@ -5,8 +5,8 @@
   "tags": ["json", "json-rpc", "jsonrpc", "websockets", "js", "javascript", "remoting"],
   "classPath": "src",
   "description": "JSON remoting calls over http and websockets",
-  "version": "1.0.3",
-  "releasenote": "Actually add a test for adding a class instead of an instance to Context.registerService",
+  "version": "1.1.0",
+  "releasenote": "Refactored. No need to package proxy arguments into an object, just use as the server class.",
   "contributors": ["dionjwa"],
   "dependencies": {
     "promhx": "1.0.21",
