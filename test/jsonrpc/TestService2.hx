@@ -9,12 +9,12 @@ class TestService2
 	public function new(){}
 
 	@rpc
-	public function foo21(args :{input:String}) :Promise<String>
+	public function foo21(input:String) :Promise<String>
 	{
-		return Promise.promise(args.input + "done");
+		return Promise.promise(input + "done");
 	}
 
-	@rpc('fooalias2')
+	@rpc({alias:'fooalias2'})
 	public function foo22(args :{input:String}) :Promise<String>
 	{
 		return Promise.promise(args.input + "done2");
@@ -26,8 +26,8 @@ class TestService2
 		return 'testNotPromise';
 	}
 
-	public function notRemoteMethod(args :{input:String}) :Promise<String>
+	public function notRemoteMethod(input:String) :Promise<String>
 	{
-		return Promise.promise(args.input + "done2");
+		return Promise.promise(input + "done2");
 	}
 }

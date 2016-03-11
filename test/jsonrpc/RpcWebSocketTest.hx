@@ -54,7 +54,7 @@ class RpcWebSocketTest extends PromiseTest
 							.setConnection(clientConnection);
 
 		var inputString = 'test';
-		clientProxy.foo1({input:inputString})
+		clientProxy.foo1(inputString)
 			.then(function(result :String) {
 				wss.close();
 				if (result == '${inputString}done') {

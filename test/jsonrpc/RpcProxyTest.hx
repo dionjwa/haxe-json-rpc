@@ -38,6 +38,7 @@ class RpcProxyTest extends PromiseTest
 
 		//Set up the server and begin
 		var httpServer = Http.createServer(function(req:IncomingMessage, res:ServerResponse) {
+			// trace('req.url=${req.url}');
 			serverConnection.handleRequest(req, res);
 		});
 
@@ -47,16 +48,16 @@ class RpcProxyTest extends PromiseTest
 
 		var inputString = 'test';
 		httpServer.listen(port, function() {
-			clientProxy.foo1({input:inputString})
-			.then(function(result :String) {
-				httpServer.close(function() {
-					if (result == '${inputString}done') {
-						deferred.resolve(true);
-					} else {
-						promise.reject('unexpected response');
-					}
+			clientProxy.foo1(inputString)
+				.then(function(result :String) {
+					httpServer.close(function() {
+						if (result == '${inputString}done') {
+							deferred.resolve(true);
+						} else {
+							promise.reject('unexpected response');
+						}
+					});
 				});
-			});
 		});
 
 		return promise;

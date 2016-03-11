@@ -1,4 +1,4 @@
-package t9.remoting.jsonrpc.cli;
+package t9.remoting.jsonrpc;
 
 import haxe.remoting.JsonRpc;
 
@@ -8,13 +8,13 @@ import haxe.remoting.JsonRpc;
  */
 
 @:enum
-abstract CLIType(String) {
+abstract RemoteMethodArgumentType(String) {
   var Int = 'Int';
   var String = 'String';
   var Unknown = 'Unknown';
 }
 
-typedef CLIArgument = {
+typedef RemoteMethodArgument = {
 	var name :String;
 	var type :String;
 	var optional :Bool;
@@ -23,8 +23,10 @@ typedef CLIArgument = {
 }
 
 typedef RemoteMethodDefinition = {
+	var field :String;
 	var method :String;
 	@:optional var doc :String;
 	@:optional var alias :String;
-	var args :Array<CLIArgument>;
+	var args :Array<RemoteMethodArgument>;
+	var isStatic :Bool;
 }
