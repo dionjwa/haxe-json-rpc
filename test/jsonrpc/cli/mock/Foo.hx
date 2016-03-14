@@ -9,9 +9,21 @@ class Foo
 	 */
 	@rpc({
 		alias:'aliasToFoo',
-		methodDoc:'foo description',
-		argumentDocs:{'arg1':'arg1doc','arg2':'arg2doc', 'arg3':'arg3doc'},
-		short:{'arg1':'a','arg2':'z', 'arg3':'f'}
+		doc:'foo description',
+		args:{
+			arg1: {
+				doc: 'arg1doc',
+				short: 'a'
+			},
+			arg2: {
+				doc: 'arg2doc',
+				short: 'z'
+			},
+			arg3: {
+				doc: 'arg3doc',
+				short: 'f'
+			}
+		}
 	})
 	public function foo(arg1 :Int, arg2 :String, ?arg3 :String = 'defaultVal', ?arg4 :Bool = false) :Promise<String>
 	{
@@ -19,7 +31,7 @@ class Foo
 	}
 
 	@rpc({
-		methodDoc:'foo2 description'
+		doc:'foo2 description'
 	})
 	public function foo2() :Promise<String>
 	{
