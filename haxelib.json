@@ -5,8 +5,8 @@
   "tags": ["json", "json-rpc", "jsonrpc", "websockets", "js", "javascript", "remoting"],
   "classPath": "src",
   "description": "JSON remoting calls over http and websockets",
-  "version": "1.2.0",
-  "releasenote": "Better @rpc metadata formatting.",
+  "version": "1.2.1",
+  "releasenote": "Better @rpc metadata formatting. Repeat CLI arguments",
   "contributors": ["dionjwa"],
   "dependencies": {
     "promhx": "1.0.21",

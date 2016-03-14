@@ -4,6 +4,7 @@ import haxe.remoting.JsonRpc;
 import js.npm.Commander;
 
 using Lambda;
+using StringTools;
 
 class CommanderTools
 {
@@ -38,7 +39,12 @@ class CommanderTools
 				if (arg.short != null) {
 					optionalArgString = '-${arg.short}, ' + optionalArgString;
 				}
-				command.option(optionalArgString, arg.doc);
+				if (arg.type.startsWith('Array<')) {
+					var collectedVal = [];
+					command.option(optionalArgString, arg.doc, function(val, memo) {memo.push(val); return memo;}, []);
+				} else {
+					command.option(optionalArgString, arg.doc, getConverter(arg.type));
+				}
 			}
 
 			command.action(function(arg1 :Dynamic, arg2 :Dynamic, arg3 :Dynamic, arg4 :Dynamic, arg5 :Dynamic, arg6 :Dynamic, arg7 :Dynamic) {
@@ -52,7 +58,9 @@ class CommanderTools
 				var requiredArgs = definition.args.filter(function(v) return !v.optional).array();
 				var optionalArgs = definition.args.filter(function(v) return v.optional).array();
 				for (i in 0...requiredArgs.length) {
-					Reflect.setField(request.params, requiredArgs[i].name, arguments[i]);
+					var arg = requiredArgs[i];
+					var converter = getConverter(arg.type);
+					Reflect.setField(request.params, arg.name, converter(arguments[i]));
 				}
 				for (arg in optionalArgs) {
 					if (Reflect.hasField (command, arg.name)) {
@@ -61,6 +69,19 @@ class CommanderTools
 				}
 				jsonrpcCallback(request);
 			});
+		}
+	}
+
+	static function getConverter(type :String) :Dynamic->Dynamic
+	{
+		return switch(type) {
+			case 'Int': Std.parseInt;
+			case 'Float': Std.parseFloat;
+			case 'Bool': function(val) {
+				var s = val + '';
+				return s == 'true' || s == 'True' || s == 'TRUE' || s == '1';
+			}
+			default: function(v) return v;
 		}
 	}
 

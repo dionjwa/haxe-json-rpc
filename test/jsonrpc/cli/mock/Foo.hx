@@ -31,9 +31,15 @@ class Foo
 	}
 
 	@rpc({
-		doc:'foo2 description'
+		doc:'foo2 description',
+		args:{
+			multiArg1: {
+				doc: 'Collect the arg',
+				short: 'a'
+			}
+		}
 	})
-	public function foo2() :Promise<String>
+	public function foo2(?multiArg1 :Array<String>) :Promise<String>
 	{
 		return null;
 	}

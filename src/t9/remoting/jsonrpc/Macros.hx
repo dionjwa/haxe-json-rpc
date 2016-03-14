@@ -126,6 +126,9 @@ class Macros
 															for (objectItemExpr in argsObjDecl) {
 																//objectItemExpr contains all the fields for the argument options
 																var argumentKey = objectItemExpr.field;
+																if (argumentKey.startsWith("@$__hx__")) {
+																	argumentKey = argumentKey.replace("@$__hx__", "");
+																}
 																var arg :RemoteMethodArgument = definition.args.find(function(v) return v.name == argumentKey);
 																if (arg == null) {
 																	Context.error('$className.${field.name}: @rpc{args:{${argumentKey}:{}}} "${argumentKey}" is not a method argument.', pos);
@@ -134,6 +137,9 @@ class Macros
 																	case EObjectDecl(argsObjItemDecl):
 																		for (argItem in argsObjItemDecl) {
 																			var argItemKey = argItem.field;
+																			if (argItemKey.startsWith("@$__hx__")) {
+																				argItemKey = argItemKey.replace("@$__hx__", "");
+																			}
 																			var argItemValue = switch(argItem.expr.expr) {
 																				case EConst(CString(s)): s;
 																				default: Context.error('$className.${field.name}: @rpc{"args":{"$argumentKey":{"$argItemKey":<val>}}} <val> must be a string.', pos);
@@ -148,39 +154,9 @@ class Macros
 																			} else {
 																				Context.error('$className.${field.name}: @rpc{"args":{"$argumentKey":{"$argItemKey":"$argItemValue"}}} "$argItemKey" is not a recogized key: [doc,short]', pos);
 																			}
-
-
-
-
-
 																		}
-																	// trace('argsObjItemDecl=${argsObjItemDecl}');
-																		
 																	default:
 																}
-
-																// trace('objectItemExpr=${objectItemExpr}');
-																
-																// switch(objectItemExpr.expr.expr) {
-																// 	case EObjectDecl(argsObjDecl):
-																// 	default: Context.error('$className.${field.name}: rpc metadata ' + "'doc' field must be an String.", pos);
-																// }
-
-
-
-
-
-
-																// switch(objectItemExpr.expr.expr) {
-																// 	case EConst(CString(s)):
-																// 		var docKey = objectItemExpr.field.substr("@$__hx__".length);
-																// 		var arg :RemoteMethodArgument = definition.args.find(function(v) return v.name == docKey);
-																// 		if (arg == null) {
-																// 			Context.error('$className.${field.name}: rpc metadata ' + "'docs' values: there is no matching method argument '" + docKey + "'", pos);
-																// 		}
-																// 		arg.doc = s;
-																// 	default: Context.error('$className.${field.name}: rpc metadata ' + "'docs' values must be Strings", pos);
-																// }
 															}
 														default: Context.error('$className.${field.name}: rpc metadata ' + "'docs' field must be an Object.", pos);
 													}

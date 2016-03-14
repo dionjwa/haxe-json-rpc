@@ -18,8 +18,14 @@ extern class Commander
 extern class Command
 {
 	public function description(s :String) :Command;
-	public function option(short :String, ?long :String, ?description :String) :Command;
+
+	@:overload(function (flags :String, description :String, coercion :Dynamic->Dynamic->Dynamic, defaultValue :Dynamic) :Command {})
+	@:overload(function (flags :String, description :String, coercion :Dynamic->Dynamic) :Command {})
+	@:overload(function (flags :String, description :String) :Command {})
+	public function option(flags :String) :Command;
+
 	public function alias(s :String) :Command;
+
 	@:overload(function(f :Dynamic->Dynamic->Dynamic->Dynamic->Dynamic->Dynamic->Dynamic->Void) :Command {})
 	@:overload(function(f :Dynamic->Dynamic->Dynamic->Dynamic->Dynamic->Dynamic->Void) :Command {})
 	@:overload(function(f :Dynamic->Dynamic->Dynamic->Dynamic->Dynamic->Void) :Command {})

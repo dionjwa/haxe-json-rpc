@@ -1,4 +1,5 @@
--D no-traces
+-debug
+# -D no-traces
 
 -lib tink_macro
 -lib promhx
