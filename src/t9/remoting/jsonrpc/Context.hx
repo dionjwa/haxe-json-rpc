@@ -111,6 +111,11 @@ class Context
 		}
 	}
 
+	public function isRegistered(method :String) :Bool
+	{
+		return _methods.exists(method);
+	}
+
 	public function handleRpcRequest(request :RequestDef) :Promise<ResponseDef>
 	{
 		if (_methods.exists(request.method)) {

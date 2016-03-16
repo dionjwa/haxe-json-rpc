@@ -14,6 +14,10 @@ import js.node.Url;
 import js.node.Http;
 import js.node.http.*;
 
+import js.npm.express.Middleware;
+import js.npm.express.Request;
+import js.npm.express.Response;
+
 using StringTools;
 
 class NodeConnectionJsonRpcHttp
@@ -25,14 +29,17 @@ class NodeConnectionJsonRpcHttp
 		_context = ctx;
 	}
 
-	public function handleRequest (req :IncomingMessage, res :ServerResponse) :Bool
+	public function handleRequest (req :Request, res :Response, next :MiddlewareNext) :Void
 	{
-		if (req.method != "POST" || req.headers[untyped "content-type"] != 'application/json-rpc') {
-			return false;
+		if (untyped req.method != "POST" || untyped req.headers[untyped "content-type"] != 'application/json-rpc') {
+			if (next != null) {
+				next();
+				return;
+			}
 		}
 
 		//Get the POST data
-		req.setEncoding("utf8");
+		untyped req.setEncoding("utf8");
 		var content = "";
 
 		var dataListener = function(chunk) {
@@ -42,10 +49,14 @@ class NodeConnectionJsonRpcHttp
 
 		req.addListener("end", function() {
 			req.removeListener("data", dataListener);
-			res.setHeader("Content-Type", "application/json");
 
 			try {
 				var body :RequestDef = Json.parse(content);
+				if (next != null && !_context.isRegistered(body.method)) {
+					next();
+					return;
+				}
+				res.setHeader("Content-Type", "application/json");
 				var promise = _context.handleRpcRequest(body);
 				promise
 					.then(function(rpcResponse :ResponseDef) {
@@ -67,7 +78,6 @@ class NodeConnectionJsonRpcHttp
 							jsonrpc: "2.0"
 						};
 						res.writeHead(500);
-						trace('responseError=${responseError}');
 						res.end(Json.stringify(responseError, null, '\t'));
 					});
 			} catch (e :Dynamic) {
@@ -80,6 +90,5 @@ class NodeConnectionJsonRpcHttp
 				res.end(Json.stringify(responseError, null, '\t'));
 			}
 		});
-		return true;
 	}
 }

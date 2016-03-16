@@ -88,7 +88,7 @@ class Macros
 									argumentTypeString = argumentTypeString.substring(5, argumentTypeString.length - 1);
 								}
 								var typeEnum :RemoteMethodArgumentType = cast argumentTypeString;
-								var methodArgument :RemoteMethodArgument = {name :arg.name, optional:arg.opt, type:argumentTypeString, doc:null};//
+								var methodArgument :RemoteMethodArgument = {name :arg.name, optional:arg.opt, type:argumentTypeString, doc:null, short:null};//
 								definition.args.push(methodArgument);
 							}
 
