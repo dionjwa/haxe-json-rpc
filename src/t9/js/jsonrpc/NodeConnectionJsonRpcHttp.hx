@@ -29,13 +29,13 @@ class NodeConnectionJsonRpcHttp
 		_context = ctx;
 	}
 
-	public function handleRequest (req :Request, res :Response, next :MiddlewareNext) :Void
+	public function handleRequest (req :Request, res :Response, ?next :MiddlewareNext) :Void
 	{
 		if (untyped req.method != "POST" || untyped req.headers[untyped "content-type"] != 'application/json-rpc') {
 			if (next != null) {
 				next();
-				return;
 			}
+			return;
 		}
 
 		//Get the POST data

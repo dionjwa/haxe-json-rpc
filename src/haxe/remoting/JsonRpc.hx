@@ -27,7 +27,6 @@ abstract JsonRpcErrorCode(Int) {
   //-32000 to -32099 Server error Reserved for implementation-defined server-errors.
 }
 
-
 typedef ResponseError = {
 	var code :Int;
 	var message :String;
