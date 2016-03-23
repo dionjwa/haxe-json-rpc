@@ -28,7 +28,7 @@ class JsonRpcConnectionHttpPost
 			id: (++_idCount) + '',
 			method: method,
 			params: params,
-			jsonrpc: "2.0"
+			jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 		};
 		return callInternal(request)
 			.then(function(response: ResponseDef) {
@@ -44,7 +44,7 @@ class JsonRpcConnectionHttpPost
 		var request :RequestDef = {
 			method: method,
 			params: params,
-			jsonrpc: '2.0'
+			jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 		};
 		return callInternal(request)
 			.then(function(_) {
@@ -86,7 +86,7 @@ class JsonRpcConnectionHttpPost
 						deferred.resolve({
 							id :request.id,
 							error: {code:-32603, message:'Invalid JSON was received by the client.', data:responseData},
-							jsonrpc: "2.0"
+							jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 						});
 					}
 				} else {
@@ -116,7 +116,7 @@ class JsonRpcConnectionHttpPost
 				deferred.resolve({
 					id :request.id,
 					error: {code:-32603, message:'Invalid JSON was received by the client.', data:response},
-					jsonrpc: "2.0"
+					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 				});
 			}
 		};
@@ -124,7 +124,7 @@ class JsonRpcConnectionHttpPost
 			deferred.resolve({
 				id :request.id,
 				error: {code:-32603, message:'Error on request', data:err},
-				jsonrpc: "2.0"
+				jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 			});
 		};
 		h.request(true);

@@ -84,7 +84,7 @@ class Routes
 							var responseError :ResponseDef = {
 								id :body.id,
 								error: {code:-32700, message:err},
-								jsonrpc: "2.0"
+								jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 							};
 							res.writeHead(500);
 							trace('responseError=${responseError}');
@@ -94,7 +94,7 @@ class Routes
 					var responseError :ResponseDef = {
 						id :0,
 						error: {code:-32700, message:'Invalid JSON was received by the server.', data:content},
-						jsonrpc: "2.0"
+						jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 					};
 					res.writeHead(500);
 					res.end(Json.stringify(responseError, null, '\t'));
@@ -130,13 +130,11 @@ class Routes
 			var pathTokens = path.split('/');
 
 			var body :RequestDef = {
-				jsonrpc: '2.0',
+				jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2,
 				id:'1',
 				method: pathTokens[pathTokens.length - 1],
 				params: parts.query
 			}
-
-			trace('body=${body}');
 
 			res.setHeader("Content-Type", "application/json");
 
@@ -159,7 +157,7 @@ class Routes
 						var responseError :ResponseDef = {
 							id :body.id,
 							error: {code:-32700, message:err},
-							jsonrpc: "2.0"
+							jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 						};
 						res.writeHead(500);
 						trace('responseError=${responseError}');
@@ -169,7 +167,7 @@ class Routes
 				var responseError :ResponseDef = {
 					id :body.id,
 					error: {code:-32700, message:'Invalid JSON was received by the server.', data:e},
-					jsonrpc: "2.0"
+					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 				};
 				res.writeHead(500);
 				res.end(Json.stringify(responseError, null, '\t'));

@@ -80,7 +80,8 @@ class RpcHttpTest extends PromiseTest
 			var postData = Json.stringify({
 				id: "1",
 				method: 'fooalias',
-				params: {input:'inputString'}
+				params: {input:'inputString'},
+				jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 			});
 			// An object of options to indicate where to post to
 			var postOptions :HttpRequestOptions = cast {

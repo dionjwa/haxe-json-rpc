@@ -18,7 +18,6 @@ class RpcHttpGetTest extends PromiseTest
 	public function new() {}
 
 	@Test
-	@timeout(1000)
 	public function testHttpGetRpc () :Promise<Bool>
 	{
 		var deferred = new Deferred();

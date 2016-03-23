@@ -84,7 +84,7 @@ class RpcWebSocketTest extends PromiseTest
 		var service = new TestService1();
 
 		var sendStuff = function(count :Int, ws :WebSocket) {
-			ws.send(Json.stringify({'id':count, 'method':'test', params:{'count':count}, jsonrpc:'2.0'}, null, '\t'));
+			ws.send(Json.stringify({'id':count, 'method':'test', params:{'count':count}, jsonrpc:JsonRpcConstants.JSONRPC_VERSION_2}, null, '\t'));
 		};
 		wss.on('connection', function connection(ws :WebSocket) {
 			sendStuff(1, ws);

@@ -49,3 +49,8 @@ typedef ResponseDefError = { > JsonRpcMessage,
 	var id :Dynamic;
 	var error :ResponseError;
 }
+
+class JsonRpcConstants
+{
+	inline public static var JSONRPC_VERSION_2 = '2.0';
+}
