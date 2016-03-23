@@ -4,7 +4,7 @@ import haxe.Json;
 import haxe.remoting.JsonRpc;
 import haxe.unit.async.PromiseTest;
 
-import t9.js.jsonrpc.NodeConnectionJsonRpcHttp;
+import t9.js.jsonrpc.Routes;
 
 import js.Node;
 import js.node.Http;
@@ -29,7 +29,7 @@ class RpcProxyTest extends PromiseTest
 		var serverContext = new t9.remoting.jsonrpc.Context();
 		var service = new TestService1();
 		serverContext.registerService(service);
-		var serverConnection = new NodeConnectionJsonRpcHttp(serverContext);
+
 
 		//Client infrastructure
 		var clientConnection = new t9.remoting.jsonrpc.JsonRpcConnectionHttp('http://localhost:' + port);
@@ -37,10 +37,7 @@ class RpcProxyTest extends PromiseTest
 							.setConnection(clientConnection);
 
 		//Set up the server and begin
-		var httpServer = Http.createServer(function(req:IncomingMessage, res:ServerResponse) {
-			// trace('req.url=${req.url}');
-			serverConnection.handleRequest(req, res);
-		});
+		var httpServer = Http.createServer(Routes.generatePostRequestHandler(serverContext).bind(_, _, null));
 
 		httpServer.on('error', function(err) {
 			promise.reject(err);

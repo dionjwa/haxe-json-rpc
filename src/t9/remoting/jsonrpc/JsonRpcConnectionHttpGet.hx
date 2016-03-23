@@ -9,12 +9,12 @@ import haxe.Json;
 import promhx.Promise;
 import promhx.Deferred;
 
-class JsonRpcConnectionHttp
+class JsonRpcConnectionHttpGet
 	implements JsonRpcConnection
 {
 	public static function urlConnect(url :String)
 	{
-		return new JsonRpcConnectionHttp(url);
+		return new JsonRpcConnectionHttpGet(url);
 	}
 
 	public function new(url)

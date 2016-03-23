@@ -4,7 +4,7 @@ import haxe.Json;
 import haxe.remoting.JsonRpc;
 import haxe.unit.async.PromiseTest;
 
-import t9.js.jsonrpc.NodeConnectionJsonRpcHttp;
+import t9.js.jsonrpc.Routes;
 
 import js.Node;
 import js.node.Http;
@@ -31,11 +31,7 @@ class RpcHttpTest extends PromiseTest
 		context.registerService(service1);
 		context.registerService(service2);
 
-		var connection = new NodeConnectionJsonRpcHttp(context);
-
-		var httpServer = Http.createServer(function(req:IncomingMessage, res:ServerResponse) {
-			connection.handleRequest(req, res);
-		});
+		var httpServer = Http.createServer(Routes.generatePostRequestHandler(context).bind(_, _, null));
 
 		httpServer.on('error', function(err) {
 			promise.reject(err);
@@ -72,11 +68,7 @@ class RpcHttpTest extends PromiseTest
 		var service = new TestService1();
 		context.registerService(service);
 
-		var connection = new NodeConnectionJsonRpcHttp(context);
-
-		var httpServer = Http.createServer(function(req:IncomingMessage, res:ServerResponse) {
-			connection.handleRequest(req, res);
-		});
+		var httpServer = Http.createServer(Routes.generatePostRequestHandler(context).bind(_, _, null));
 
 		httpServer.on('error', function(err) {
 			promise.reject(err);
