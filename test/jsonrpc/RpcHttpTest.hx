@@ -4,7 +4,7 @@ import haxe.Json;
 import haxe.remoting.JsonRpc;
 import haxe.unit.async.PromiseTest;
 
-import t9.js.jsonrpc.NodeConnectionJsonRpcHttp;
+import t9.js.jsonrpc.Routes;
 
 import js.Node;
 import js.node.Http;
@@ -31,11 +31,7 @@ class RpcHttpTest extends PromiseTest
 		context.registerService(service1);
 		context.registerService(service2);
 
-		var connection = new NodeConnectionJsonRpcHttp(context);
-
-		var httpServer = Http.createServer(function(req:IncomingMessage, res:ServerResponse) {
-			connection.handleRequest(req, res);
-		});
+		var httpServer = Http.createServer(Routes.generatePostRequestHandler(context).bind(_, _, null));
 
 		httpServer.on('error', function(err) {
 			promise.reject(err);
@@ -43,12 +39,13 @@ class RpcHttpTest extends PromiseTest
 
 		var port = '8082';
 
-		var clientConnection = new t9.remoting.jsonrpc.JsonRpcConnectionHttp('http://localhost:' + port);
+		var clientConnection = new t9.remoting.jsonrpc.JsonRpcConnectionHttpPost('http://localhost:' + port);
 
 		httpServer.listen(port, function() {
 			clientConnection.request(Type.getClassName(TestService1) + '.foo1', {input1:'inputString', input2:'inputString2'})
 			.then(function(result :String) {
 				httpServer.close(function() {
+					trace('closed');
 					if (result == 'inputStringdone') {
 						deferred.resolve(true);
 					} else {
@@ -72,11 +69,7 @@ class RpcHttpTest extends PromiseTest
 		var service = new TestService1();
 		context.registerService(service);
 
-		var connection = new NodeConnectionJsonRpcHttp(context);
-
-		var httpServer = Http.createServer(function(req:IncomingMessage, res:ServerResponse) {
-			connection.handleRequest(req, res);
-		});
+		var httpServer = Http.createServer(Routes.generatePostRequestHandler(context).bind(_, _, null));
 
 		httpServer.on('error', function(err) {
 			promise.reject(err);
@@ -87,7 +80,8 @@ class RpcHttpTest extends PromiseTest
 			var postData = Json.stringify({
 				id: "1",
 				method: 'fooalias',
-				params: {input:'inputString'}
+				params: {input:'inputString'},
+				jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 			});
 			// An object of options to indicate where to post to
 			var postOptions :HttpRequestOptions = cast {

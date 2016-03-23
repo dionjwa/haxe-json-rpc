@@ -42,7 +42,7 @@ class JsonRpcConnectionWebSocket
 		var incoming :IncomingObj<Dynamic> = cast message;
 		if (message.id != null) {
 			incoming.sendResponse = function(val :Dynamic) {
-				var response :ResponseDefSuccess<Dynamic> = {id:message.id, jsonrpc:'2.0', result:val};
+				var response :ResponseDefSuccess<Dynamic> = {id:message.id, result:val, jsonrpc:JsonRpcConstants.JSONRPC_VERSION_2};
 				var responseString = Json.stringify(response);
 				getConnection()
 					.then(function(ws :WebSocketConnection) {
@@ -50,7 +50,7 @@ class JsonRpcConnectionWebSocket
 					});
 			};
 			incoming.sendError = function(err :ResponseError) {
-				var responseErrorDef :ResponseDefError = {id:message.id, jsonrpc:'2.0', error:err};
+				var responseErrorDef :ResponseDefError = {id:message.id, error:err, jsonrpc:JsonRpcConstants.JSONRPC_VERSION_2};
 				var errorString = Json.stringify(responseErrorDef);
 				getConnection()
 					.then(function(ws :WebSocketConnection) {
@@ -75,7 +75,7 @@ class JsonRpcConnectionWebSocket
 #end
 		try {
 			var json :Dynamic = Json.parse(data);
-			if (json.jsonrpc != '2.0') {
+			if (json.jsonrpc != JsonRpcConstants.JSONRPC_VERSION_2) {
 				Log.error('Not json-rpc type:"$data"');
 				return;
 			}
@@ -111,7 +111,7 @@ class JsonRpcConnectionWebSocket
 			id: (++_idCount) + '',
 			method: method,
 			params: params,
-			jsonrpc: '2.0'
+			jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 		};
 		return callRequestInternal(request)
 			.then(function(response: ResponseDef) {
@@ -127,7 +127,7 @@ class JsonRpcConnectionWebSocket
 		var request :RequestDef = {
 			method: method,
 			params: params,
-			jsonrpc: '2.0'
+			jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 		};
 		return callNotifyInternal(request);
 	}

@@ -2,19 +2,23 @@ package t9.remoting.jsonrpc;
 
 import js.node.Url;
 import js.node.Http;
+import js.node.Querystring;
+import js.node.stream.Readable;
 
 import haxe.remoting.JsonRpc;
 import haxe.Json;
 
 import promhx.Promise;
-import promhx.Deferred;
+import promhx.deferred.DeferredPromise;
 
-class JsonRpcConnectionHttp
+using StringTools;
+
+class JsonRpcConnectionHttpGet
 	implements JsonRpcConnection
 {
 	public static function urlConnect(url :String)
 	{
-		return new JsonRpcConnectionHttp(url);
+		return new JsonRpcConnectionHttpGet(url);
 	}
 
 	public function new(url)
@@ -28,7 +32,7 @@ class JsonRpcConnectionHttp
 			id: (++_idCount) + '',
 			method: method,
 			params: params,
-			jsonrpc: "2.0"
+			jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 		};
 		return callInternal(request)
 			.then(function(response: ResponseDef) {
@@ -44,7 +48,7 @@ class JsonRpcConnectionHttp
 		var request :RequestDef = {
 			method: method,
 			params: params,
-			jsonrpc: '2.0'
+			jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 		};
 		return callInternal(request)
 			.then(function(_) {
@@ -54,54 +58,51 @@ class JsonRpcConnectionHttp
 
 	function callInternal(request :RequestDef) :Promise<ResponseDef>
 	{
-		var deferred = new Deferred<ResponseDef>();
-		var promise = deferred.promise();
+		var promise = new DeferredPromise<ResponseDef>();
+
 #if nodejs
-		var postData = Json.stringify(request);
 		// An object of options to indicate where to post to
 		var urlObj = js.node.Url.parse(_url);
-		var postOptions :HttpRequestOptions = cast {
+		var requestOptions :HttpRequestOptions = {
 			hostname: urlObj.hostname,
-			port: urlObj.port,
-			path: urlObj.path,
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json-rpc',
-				'Content-Length': postData.length
-			}
+			port: urlObj.port != null ? Std.parseInt(urlObj.port) : 80,
+			path: urlObj.path + (urlObj.path.endsWith('/') ? '' : '/') + request.method + (request.params != null ? '?' + Querystring.stringify(request.params) : ''),
+			method: 'GET',
+			protocol: urlObj.protocol
 		};
 		// Set up the request
-		var postReq = js.node.Http.request(postOptions, function(res) {
+		var getReq = js.node.Http.request(requestOptions, function(res) {
 			res.setEncoding('utf8');
 			var responseData = '';
-			res.on('data', function (chunk) {
+			res.on(ReadableEvent.Data, function (chunk) {
 				responseData += chunk;
 			});
-			res.on('end', function () {
+			res.on(ReadableEvent.Error, function (err) {
+				promise.boundPromise.reject(err);
+			});
+			res.on(ReadableEvent.End, function () {
 				if (request.id != null) {
 					try {
 						var jsonRes = Json.parse(responseData);
-						deferred.resolve(jsonRes);
+						promise.resolve(jsonRes);
 					} catch(err :Dynamic) {
-						deferred.resolve({
+						promise.resolve({
 							id :request.id,
 							error: {code:-32603, message:'Invalid JSON was received by the client.', data:responseData},
-							jsonrpc: "2.0"
+							jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 						});
 					}
 				} else {
-					deferred.resolve(null);
+					promise.resolve(null);
 				}
 			});
 		});
 
-		postReq.on('error', function(err) {
-			promise.reject(err);
+		getReq.on('error', function(err) {
+			promise.boundPromise.reject(err);
 		});
 
-		// post the data
-		postReq.write(postData);
-		postReq.end();
+		getReq.end();
 #else
 		var h = new haxe.Http(_url);
 		h.setHeader("content-type","application/json-rpc");
@@ -116,7 +117,7 @@ class JsonRpcConnectionHttp
 				deferred.resolve({
 					id :request.id,
 					error: {code:-32603, message:'Invalid JSON was received by the client.', data:response},
-					jsonrpc: "2.0"
+					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 				});
 			}
 		};
@@ -124,12 +125,12 @@ class JsonRpcConnectionHttp
 			deferred.resolve({
 				id :request.id,
 				error: {code:-32603, message:'Error on request', data:err},
-				jsonrpc: "2.0"
+				jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 			});
 		};
 		h.request(true);
 #end
-		return promise;
+		return promise.boundPromise;
 	}
 
 	var _url :String;

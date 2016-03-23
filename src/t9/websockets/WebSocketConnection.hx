@@ -230,6 +230,7 @@ class WebSocketConnection
 					_onmessage[i](event);
 #end
 				} catch (e :Dynamic) {
+					trace(e);
 					Log.error(e);
 				}
 				i++;

@@ -13,7 +13,9 @@ import js.npm.Ws;
 import promhx.Promise;
 import promhx.Deferred;
 
-import t9.js.jsonrpc.NodeConnectionJsonRpcWebSocket;
+import t9.js.jsonrpc.Routes;
+
+// import t9.js.jsonrpc.NodeConnectionJsonRpcWebSocket;
 import t9.remoting.jsonrpc.JsonRpcConnectionWebSocket;
 
 class RpcWebSocketTest extends PromiseTest
@@ -33,14 +35,15 @@ class RpcWebSocketTest extends PromiseTest
 		var serverContext = new t9.remoting.jsonrpc.Context();
 		var service = new TestService1();
 		serverContext.registerService(service);
-		var serverConnection = new NodeConnectionJsonRpcWebSocket(serverContext);
+
+		var handler = Routes.generateJsonRpcRequestHandler(serverContext);
 
 		wss.on('connection', function connection(ws :WebSocket) {
 			var sender = function(rpcResponse :ResponseDef) {
 				ws.send(Json.stringify(rpcResponse, null, '\t'));
 			}
 			ws.on('message', function incoming(message :String) {
-				serverConnection.handleRequest(message, sender);
+				handler(message, sender);
 			});
 		});
 		wss.on('error', function(err) {
@@ -79,10 +82,9 @@ class RpcWebSocketTest extends PromiseTest
 		var wss = new WebSocketServer({port:port});
 		var serverContext = new t9.remoting.jsonrpc.Context();
 		var service = new TestService1();
-		var serverConnection = new NodeConnectionJsonRpcWebSocket(serverContext);
 
 		var sendStuff = function(count :Int, ws :WebSocket) {
-			ws.send(Json.stringify({'id':count, 'method':'test', params:{'count':count}, jsonrpc:'2.0'}, null, '\t'));
+			ws.send(Json.stringify({'id':count, 'method':'test', params:{'count':count}, jsonrpc:JsonRpcConstants.JSONRPC_VERSION_2}, null, '\t'));
 		};
 		wss.on('connection', function connection(ws :WebSocket) {
 			sendStuff(1, ws);
