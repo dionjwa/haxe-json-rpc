@@ -18,6 +18,7 @@ class RpcHttpGetTest extends PromiseTest
 	public function new() {}
 
 	@Test
+	@timeout(1000)
 	public function testHttpGetRpc () :Promise<Bool>
 	{
 		var deferred = new Deferred();
@@ -39,7 +40,7 @@ class RpcHttpGetTest extends PromiseTest
 
 		var port = '8082';
 
-		var clientConnection = new t9.remoting.jsonrpc.JsonRpcConnectionHttp('http://localhost:' + port);
+		var clientConnection = new t9.remoting.jsonrpc.JsonRpcConnectionHttpGet('http://localhost:' + port);
 
 		httpServer.listen(port, function() {
 			clientConnection.request(Type.getClassName(TestService1) + '.foo1', {input1:'inputString', input2:'inputString2'})
