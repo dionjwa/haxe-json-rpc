@@ -3,6 +3,7 @@
 -D travis
 -D nodejs
 -D include_server_logic
+-D PromhxExposeErrors
 
 -lib hxnodejs
 -lib logshim

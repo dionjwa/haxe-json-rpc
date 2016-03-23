@@ -53,7 +53,7 @@ class RpcWebSocketTest extends PromiseTest
 
 		//Client infrastructure
 		var clientConnection = new JsonRpcConnectionWebSocket('http://localhost:' + port);
-		var clientProxy = t9.remoting.jsonrpc.Macros.buildRpcClient(jsonrpc.TestService1)
+		var clientProxy = t9.remoting.jsonrpc.Macros.buildRpcClient(jsonrpc.TestService1, true)
 							.setConnection(clientConnection);
 
 		var inputString = 'test';

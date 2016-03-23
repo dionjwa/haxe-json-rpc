@@ -33,7 +33,7 @@ class RpcProxyTest extends PromiseTest
 
 		//Client infrastructure
 		var clientConnection = new t9.remoting.jsonrpc.JsonRpcConnectionHttpPost('http://localhost:' + port);
-		var clientProxy = t9.remoting.jsonrpc.Macros.buildRpcClient(jsonrpc.TestService1)
+		var clientProxy = t9.remoting.jsonrpc.Macros.buildRpcClient(jsonrpc.TestService1, true)
 							.setConnection(clientConnection);
 
 		//Set up the server and begin

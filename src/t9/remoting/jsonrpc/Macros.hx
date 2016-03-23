@@ -215,7 +215,7 @@ class Macros
 	  * and returns an instance of the newly created proxy class.
 	  */
 	macro
-	public static function buildRpcClient(classExpr: Expr) :Expr
+	public static function buildRpcClient(classExpr: Expr, ?include_server_logic :Bool = false) :Expr
 	{
 		var pos = Context.currentPos();
 
@@ -294,9 +294,10 @@ class Macros
 		}
 
 		//If you're building the proxy, you don't want the remote logic compiled in
-#if !include_server_logic
-		Compiler.exclude(className);
-#end
+		if (!include_server_logic) {
+			Compiler.exclude(className);
+		}
+
 		var c = macro class $proxyClassName
 		{
 			var _conn :t9.remoting.jsonrpc.JsonRpcConnection;

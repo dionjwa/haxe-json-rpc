@@ -43,7 +43,7 @@ class Routes
 
 	public static function generatePostRequestHandler (context :Context)
 	{
-		return function(req :IncomingMessage, res :ServerResponse, ?next :?Dynamic->Void) {
+		return function(req :IncomingMessage, res :ServerResponse, next :?Dynamic->Void) :Void {
 			if (req.method != "POST" || req.headers[untyped "content-type"] != 'application/json-rpc') {
 				if (next != null) {
 					next();
@@ -111,7 +111,7 @@ class Routes
 	 */
 	public static function generateGetRequestHandler (context :Context)
 	{
-		return function(req :IncomingMessage, res :ServerResponse, ?next :?Dynamic->Void) {
+		return function(req :IncomingMessage, res :ServerResponse, next :?Dynamic->Void) :Void {
 			if (req.method != "GET") {
 				if (next != null) {
 					next();
