@@ -29,6 +29,16 @@ class Context
 		_methods = null;
 	}
 
+	public function exists(method :String) :Bool
+	{
+		return _methods.exists(method);
+	}
+
+	public function methods() :Array<String>
+	{
+		return [for (s in _methods.keys()) s];
+	}
+
 	/**
 	 * Get all methods annotated with 'rpc' and bind them to the service.
 	 */
@@ -113,7 +123,7 @@ class Context
 
 	public function handleRpcRequest(request :RequestDef) :Promise<ResponseDef>
 	{
-		if (_methods.exists(request.method)) {
+		if (exists(request.method)) {
 			var call = _methods.get(request.method);
 			try {
 				return call(request)
@@ -148,7 +158,7 @@ class Context
 		} else {
 			var responseError :ResponseDef = {
 				id :request.id,
-				error: {code:-32601, message:'The method="${request.method}" does not exist / is not available. Available methods=[' + [for (s in _methods.keys()) s].join(',') + ']'},
+				error: {code:-32601, message:'The method="${request.method}" does not exist / is not available. Available methods=[' + methods().join(',') + ']'},
 				jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 			};
 			return Promise.promise(responseError);

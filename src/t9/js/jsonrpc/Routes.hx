@@ -13,6 +13,7 @@ import js.Node;
 import js.node.Url;
 import js.node.Http;
 import js.node.http.*;
+import js.node.stream.Readable;
 
 using StringTools;
 
@@ -44,7 +45,7 @@ class Routes
 	public static function generatePostRequestHandler (context :Context)
 	{
 		return function(req :IncomingMessage, res :ServerResponse, next :?Dynamic->Void) :Void {
-			if (req.method != "POST" || req.headers[untyped "content-type"] != 'application/json-rpc') {
+			if (req.method != 'POST' || req.headers[untyped 'content-type'] != 'application/json-rpc') {
 				if (next != null) {
 					next();
 				}
@@ -52,20 +53,31 @@ class Routes
 			}
 
 			//Get the POST data
-			req.setEncoding("utf8");
+			req.setEncoding('utf8');
 			var content = "";
 
 			var dataListener = function(chunk) {
 				content += chunk;
 			};
-			req.addListener("data", dataListener);
+			req.addListener(ReadableEvent.Data, dataListener);
 
-			req.addListener("end", function() {
-				req.removeListener("data", dataListener);
-				res.setHeader("Content-Type", "application/json");
+			req.addListener(ReadableEvent.End, function() {
+				req.removeListener(ReadableEvent.Data, dataListener);
+				res.setHeader('Content-Type', 'application/json');
 
 				try {
 					var body :RequestDef = Json.parse(content);
+					if (body.method == null || body.method == '' || !context.exists(body.method)) {
+						var responseError :ResponseDef = {
+							id :body.id,
+							error: {code:-32601, message:'The method="${body.method}" does not exist / is not available. Available methods=[' + context.methods().join(',') + ']'},
+							jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
+						};
+						res.writeHead(400);
+						res.end(Json.stringify(responseError, null, '\t'));
+						return;
+					}
+
 					var promise = context.handleRpcRequest(body);
 					promise
 						.then(function(rpcResponse :ResponseDef) {
@@ -112,7 +124,7 @@ class Routes
 	public static function generateGetRequestHandler (context :Context)
 	{
 		return function(req :IncomingMessage, res :ServerResponse, next :?Dynamic->Void) :Void {
-			if (req.method != "GET") {
+			if (req.method != 'GET') {
 				if (next != null) {
 					next();
 				}

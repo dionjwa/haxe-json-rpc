@@ -18,7 +18,6 @@ Add this to your hxml file (and install with `haxelib install json-rpc`):
 
 	-lib json-rpc
 
-
 ## Limitations
 
  - Currently Node.js is the only server platform supported. Others can easily be added (pull requests welcome).
