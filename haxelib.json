@@ -3,10 +3,10 @@
   "url" : "https://github.com/dionjwa/haxe-json-rpc",
   "license": "MIT",
   "tags": ["json", "json-rpc", "jsonrpc", "websockets", "js", "javascript", "remoting"],
-  "classPath": "src",
+  "classPath": "src/haxe",
   "description": "JSON remoting calls over http and websockets",
-  "version": "1.3.2",
-  "releasenote": "Added GET request JsonRPC handling",
+  "version": "1.3.3",
+  "releasenote": "Added python proxy JSON-RPC proxy code",
   "contributors": ["dionjwa"],
   "dependencies": {
     "promhx": "1.0.21",

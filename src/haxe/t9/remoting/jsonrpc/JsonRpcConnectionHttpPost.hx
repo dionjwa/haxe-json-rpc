@@ -1,13 +1,17 @@
 package t9.remoting.jsonrpc;
 
-import js.node.Url;
-import js.node.Http;
+#if (nodejs && !macro)
+	import js.node.Url;
+	import js.node.Http;
+#end
 
 import haxe.remoting.JsonRpc;
 import haxe.Json;
 
-import promhx.Promise;
-import promhx.Deferred;
+#if nodejs
+	import promhx.Promise;
+	import promhx.Deferred;
+#end
 
 class JsonRpcConnectionHttpPost
 	implements JsonRpcConnection
@@ -22,7 +26,11 @@ class JsonRpcConnectionHttpPost
 		_url = url;
 	}
 
+#if python
+	public function request(method :String, ?params :Dynamic) :Dynamic
+#else
 	public function request(method :String, ?params :Dynamic) :Promise<Dynamic>
+#end
 	{
 		var request :RequestDef = {
 			id: (++_idCount) + '',
@@ -30,6 +38,9 @@ class JsonRpcConnectionHttpPost
 			params: params,
 			jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 		};
+#if python
+		return callInternal(request).result;
+#else
 		return callInternal(request)
 			.then(function(response: ResponseDef) {
 				if (response.error != null) {
@@ -37,26 +48,49 @@ class JsonRpcConnectionHttpPost
 				}
 				return response.result;
 			});
+#end
 	}
 
+#if python
+	public function notify(method :String, ?params :Dynamic) :Bool
+#else
 	public function notify(method :String, ?params :Dynamic) :Promise<Bool>
+#end
 	{
 		var request :RequestDef = {
 			method: method,
 			params: params,
 			jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 		};
+#if python
+		callInternal(request);
+		return true;
+#else
 		return callInternal(request)
 			.then(function(_) {
 				return true;
 			});
+#end
 	}
 
+#if python
+	function callInternal(request :RequestDef) :ResponseDef
+#else
 	function callInternal(request :RequestDef) :Promise<ResponseDef>
+#end
 	{
+#if python
+		var response :ResponseDef = {
+			id: request.id,
+			result: '',
+			jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
+		};
+		return response;
+#else
+	#if nodejs
 		var deferred = new Deferred<ResponseDef>();
 		var promise = deferred.promise();
-#if nodejs
+
 		var postData = Json.stringify(request);
 		// An object of options to indicate where to post to
 		var urlObj = js.node.Url.parse(_url);
@@ -102,7 +136,7 @@ class JsonRpcConnectionHttpPost
 		// post the data
 		postReq.write(postData);
 		postReq.end();
-#else
+	#else
 		var h = new haxe.Http(_url);
 		h.setHeader("content-type","application/json-rpc");
 
@@ -128,8 +162,9 @@ class JsonRpcConnectionHttpPost
 			});
 		};
 		h.request(true);
-#end
+	#end
 		return promise;
+#end
 	}
 
 	var _url :String;

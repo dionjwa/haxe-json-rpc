@@ -53,4 +53,5 @@ typedef ResponseDefError = { > JsonRpcMessage,
 class JsonRpcConstants
 {
 	inline public static var JSONRPC_VERSION_2 = '2.0';
+	inline public static var MULTIPART_JSONRPC_KEY = 'jsonrpc';
 }

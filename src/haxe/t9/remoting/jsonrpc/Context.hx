@@ -8,16 +8,19 @@ import promhx.Promise;
 import promhx.Deferred;
 
 #if macro
-import haxe.macro.Expr;
-import haxe.macro.Context;
+	import haxe.macro.Expr;
+	import haxe.macro.Context;
 #end
 
 using Lambda;
 
 class Context
 {
+#if nodejs
 	@:allow(js.npm.JsonRpcExpressTools)
+#end
 	var _methods :Map<String, RequestDef->Promise<Dynamic>>;
+	var _methodDefinitions :Array<t9.remoting.jsonrpc.RemoteMethodDefinition> = [];
 
 	public function new ()
 	{
@@ -80,6 +83,7 @@ class Context
 			}
 			var serviceObjectToCall = methodDef.isStatic ? type : service;
 			bindMethod(serviceObjectToCall, methodDef);
+			_methodDefinitions.push(methodDef);
 		}
 	}
 
@@ -156,12 +160,21 @@ class Context
 				return Promise.promise(responseError);
 			}
 		} else {
-			var responseError :ResponseDef = {
-				id :request.id,
-				error: {code:-32601, message:'The method="${request.method}" does not exist / is not available. Available methods=[' + methods().join(',') + ']'},
-				jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
-			};
-			return Promise.promise(responseError);
+			if (request.method == 'help') {
+				var helpResponse :ResponseDef = {
+					id :request.id,
+					result: _methodDefinitions,
+					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
+				};
+				return Promise.promise(helpResponse);
+			} else {
+				var responseError :ResponseDef = {
+					id :request.id,
+					error: {code:-32601, message:'The method="${request.method}" does not exist / is not available. Available methods=[' + methods().join(',') + ']'},
+					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
+				};
+				return Promise.promise(responseError);
+			}
 		}
 	}
 }

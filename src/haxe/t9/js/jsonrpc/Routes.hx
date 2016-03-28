@@ -1,19 +1,17 @@
 package t9.js.jsonrpc;
 
-#if !nodejs
-#error
-#end
-
 import haxe.Json;
 import haxe.remoting.JsonRpc;
 
 import t9.remoting.jsonrpc.Context;
 
-import js.Node;
-import js.node.Url;
-import js.node.Http;
-import js.node.http.*;
-import js.node.stream.Readable;
+#if nodejs
+	import js.Node;
+	import js.node.Url;
+	import js.node.Http;
+	import js.node.http.*;
+	import js.node.stream.Readable;
+#end
 
 using StringTools;
 
@@ -67,16 +65,16 @@ class Routes
 
 				try {
 					var body :RequestDef = Json.parse(content);
-					if (body.method == null || body.method == '' || !context.exists(body.method)) {
-						var responseError :ResponseDef = {
-							id :body.id,
-							error: {code:-32601, message:'The method="${body.method}" does not exist / is not available. Available methods=[' + context.methods().join(',') + ']'},
-							jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
-						};
-						res.writeHead(400);
-						res.end(Json.stringify(responseError, null, '\t'));
-						return;
-					}
+					// if (body.method == null || body.method == '' || !context.exists(body.method)) {
+					// 	var responseError :ResponseDef = {
+					// 		id :body.id,
+					// 		error: {code:-32601, message:'The method="${body.method}" does not exist / is not available. Available methods=[' + context.methods().join(',') + ']'},
+					// 		jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
+					// 	};
+					// 	res.writeHead(400);
+					// 	res.end(Json.stringify(responseError, null, '\t'));
+					// 	return;
+					// }
 
 					var promise = context.handleRpcRequest(body);
 					promise
