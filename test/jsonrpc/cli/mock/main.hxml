@@ -5,6 +5,7 @@
 -lib promhx
 -lib hxnodejs
 
+-cp lib/hxnodelibs
 -cp src/haxe
 -cp test
 
