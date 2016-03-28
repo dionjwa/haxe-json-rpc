@@ -5,11 +5,11 @@
 -lib promhx
 -lib hxnodejs
 
--cp src
+-cp src/haxe
 -cp test
 
 -main jsonrpc.cli.mock.Main
 
--js build/cli_test.js
+-js build/test/cli_test.js
 
--cmd echo '#!/usr/bin/env node' | cat - build/cli_test.js > temp && mv temp build/cli_test.js && chmod 755 build/cli_test.js
+-cmd echo '#!/usr/bin/env node' | cat - build/test/cli_test.js > temp && mv temp build/test/cli_test.js && chmod 755 build/test/cli_test.js

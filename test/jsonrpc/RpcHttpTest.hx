@@ -45,7 +45,6 @@ class RpcHttpTest extends PromiseTest
 			clientConnection.request(Type.getClassName(TestService1) + '.foo1', {input1:'inputString', input2:'inputString2'})
 			.then(function(result :String) {
 				httpServer.close(function() {
-					trace('closed');
 					if (result == 'inputStringdone') {
 						deferred.resolve(true);
 					} else {

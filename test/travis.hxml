@@ -10,7 +10,7 @@
 -lib promhx
 -lib promhx-unit-test:1.1.4
 
--cp src
+-cp src/haxe
 -cp test
 
 -main Tests
