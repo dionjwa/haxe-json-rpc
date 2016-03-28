@@ -15,9 +15,9 @@
 
 -main Tests
 
--js build/nodejs_test.js
+-js build/test/nodejs_test.js
 
 --next
 
--cmd node build/nodejs_test.js
+-cmd node build/test/nodejs_test.js
 
