@@ -4,6 +4,7 @@ class Tests
 {
 	public static function main () :Void
 	{
+#if nodejs
 		new haxe.unit.async.PromiseTestRunner()
 
 			.add(new jsonrpc.BasicsTest())
@@ -15,10 +16,19 @@ class Tests
 
 			.run().onFinish = function() trace("Finished!");
 
-#if (nodejs && !travis)
-		try {
-			untyped __js__("if (require.resolve('source-map-support')) {require('source-map-support').install(); console.log('source-map-support installed');}");
-		} catch (e :Dynamic) {}
+	#if !travis
+			try {
+				untyped __js__("if (require.resolve('source-map-support')) {require('source-map-support').install(); console.log('source-map-support installed');}");
+			} catch (e :Dynamic) {}
+	#end
+#elseif python
+			var r = new haxe.unit.TestRunner();
+		    r.add(new jsonrpc.cli.PythonClientTest());
+		    r.run();
+#else
+	#error
 #end
+
+
 	}
 }

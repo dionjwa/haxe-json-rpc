@@ -1,0 +1,20 @@
+-debug
+
+-D nodejs
+-D PromhxExposeErrors
+
+-lib hxnodejs
+-lib logshim
+-lib promhx
+
+-cp src
+-cp test
+
+-main jsonrpc.TestServer
+
+-js build/test/server.js
+
+# --next
+
+# -cmd node build/test/server.js
+

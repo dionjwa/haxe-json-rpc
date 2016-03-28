@@ -1,0 +1,14 @@
+-debug
+
+-D jsonrpcdebug
+
+-lib logshim
+
+-cp src
+-cp test
+
+-main jsonrpc.python.PythonClient
+
+-python build/test/client_python.py
+
+-cmd python build/test/client_python.py
