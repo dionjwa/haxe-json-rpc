@@ -20,13 +20,11 @@ class TestCLI extends PromiseTest
 		assertEquals(false, rpcData[0].isStatic);
 
 		assertEquals('arg1doc', rpcData[0].args[0].doc);
-		assertEquals('a', rpcData[0].args[0].short);
 		assertEquals('arg1', rpcData[0].args[0].name);
 		assertEquals(false, rpcData[0].args[0].optional);
 
-		assertEquals('arg2doc', rpcData[0].args[1].doc);
-		assertEquals('z', rpcData[0].args[1].short);
-		assertEquals('arg2', rpcData[0].args[1].name);
+		assertEquals('args2doc', rpcData[0].args[1].doc);
+		assertEquals('args2', rpcData[0].args[1].name);
 		assertEquals(false, rpcData[0].args[1].optional);
 
 		assertEquals('Collect the arg', rpcData[1].args[0].doc);
@@ -39,15 +37,30 @@ class TestCLI extends PromiseTest
 		assertEquals(true, rpcData[0].args[3].optional);
 
 		var out :js.node.Buffer = untyped __js__('require("child_process").execSync("haxe test/jsonrpc/cli/mock/main.hxml")');
-		var out :js.node.Buffer = untyped __js__('require("child_process").execSync("build/cli_test.js aliasToFoo 1 arg2 --arg3 testVal --arg4")');
+		var out :js.node.Buffer = untyped __js__('require("child_process").execSync("build/test/cli_test.js aliasToFoo --arg3=testVal --arg4=true 1 arg2_1 arg2_2 arg2_3")');
 		var json :RequestDef = Json.parse(out.toString());
 		assertEquals(json.method, 'jsonrpc.cli.mock.Foo.foo');
 		assertEquals(json.params.arg1, 1);
-		assertEquals(json.params.arg2, 'arg2');
+		switch(json.params.args2) {
+			case ['arg2_1', 'arg2_2', 'arg2_3']://Success
+			default:assertTrue(false);
+		}
 		assertEquals(json.params.arg3, 'testVal');
 		assertEquals(json.params.arg4, true);
 
-		var out :js.node.Buffer = untyped __js__('require("child_process").execSync("build/cli_test.js jsonrpc.cli.mock.Foo.foo2 --multiArg1=a --multiArg1=b")');
+		//Same as above but different variadic args
+		var out :js.node.Buffer = untyped __js__('require("child_process").execSync("build/test/cli_test.js aliasToFoo --arg3=testVal --arg4=true 1 arg2_1")');
+		var json :RequestDef = Json.parse(out.toString());
+		assertEquals(json.method, 'jsonrpc.cli.mock.Foo.foo');
+		assertEquals(json.params.arg1, 1);
+		switch(json.params.args2) {
+			case ['arg2_1']://Success
+			default:assertTrue(false);
+		}
+		assertEquals(json.params.arg3, 'testVal');
+		assertEquals(json.params.arg4, true);
+
+		var out :js.node.Buffer = untyped __js__('require("child_process").execSync("build/test/cli_test.js jsonrpc.cli.mock.Foo.foo2 --multiArg1=a --multiArg1=b")');
 		var json :RequestDef = Json.parse(out.toString());
 		assertEquals(json.method, 'jsonrpc.cli.mock.Foo.foo2');
 		assertEquals(json.params.multiArg1.length, 2);

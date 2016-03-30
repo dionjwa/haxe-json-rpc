@@ -5,8 +5,8 @@
   "tags": ["json", "json-rpc", "jsonrpc", "websockets", "js", "javascript", "remoting"],
   "classPath": "src/haxe",
   "description": "JSON remoting calls over http and websockets",
-  "version": "1.3.4",
-  "releasenote": "Added hxnodelibs submodule",
+  "version": "1.3.5",
+  "releasenote": "Commander variadic non-optional arguments",
   "contributors": ["dionjwa"],
   "dependencies": {
     "promhx": "1.0.21",

@@ -29,8 +29,14 @@ class CommanderTools
 	{
 		for (definition in definitions) {
 			var commandName = definition.alias != null ? definition.alias : definition.method;
-			for (arg in definition.args.filter(function(v) return !v.optional)) {
+			var nonOptionalArgs = definition.args.filter(function(v) return !v.optional);
+			for (i in 0...nonOptionalArgs.length) {
+				var arg = nonOptionalArgs[i];
 				commandName += ' <${arg.name}>';
+				if (i == (nonOptionalArgs.length - 1) && arg.type.startsWith('Array<')) {
+					//Last argument can be variadic
+					commandName += ' [more${arg.name}...]';
+				}
 			}
 			var command = program.command(commandName);
 			command.description(definition.doc);
@@ -47,11 +53,11 @@ class CommanderTools
 				}
 			}
 
-			command.action(function(arg1 :Dynamic, arg2 :Dynamic, arg3 :Dynamic, arg4 :Dynamic, arg5 :Dynamic, arg6 :Dynamic, arg7 :Dynamic) {
-				var options :{options:Dynamic} = getOptions(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
-				var arguments = getArguments(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+			command.action(function(arg1 :Dynamic, arg2 :Dynamic, arg3 :Dynamic, arg4 :Dynamic, arg5 :Dynamic, arg6 :Dynamic, arg7 :Dynamic, arg8 :Dynamic, arg9 :Dynamic, arg10 :Dynamic, arg11 :Dynamic) {
+				var arguments = getArguments(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11);
 				var request :RequestDef = {
-					jsonrpc: '2.0',
+					id: JsonRpcConstants.JSONRPC_NULL_ID,
+					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2,
 					method: definition.method,
 					params: {}
 				}
@@ -60,10 +66,16 @@ class CommanderTools
 				for (i in 0...requiredArgs.length) {
 					var arg = requiredArgs[i];
 					var converter = getConverter(arg.type);
-					Reflect.setField(request.params, arg.name, converter(arguments[i]));
+					if (arg.type.startsWith('Array<') && i == (requiredArgs.length - 1) && arguments[i + 1] != null) {
+						var arrArgs :Array<Dynamic> = arguments[i + 1];
+						arrArgs.unshift(arguments[i]);
+						Reflect.setField(request.params, arg.name, arrArgs.map(converter));
+					} else {
+						Reflect.setField(request.params, arg.name, converter(arguments[i]));
+					}
 				}
 				for (arg in optionalArgs) {
-					if (Reflect.hasField (command, arg.name)) {
+					if (Reflect.hasField(command, arg.name)) {
 						Reflect.setField(request.params, arg.name, Reflect.field(command, arg.name));
 					}
 				}
@@ -74,6 +86,9 @@ class CommanderTools
 
 	static function getConverter(type :String) :Dynamic->Dynamic
 	{
+		if (type.startsWith('Array<')) {
+			type = type.replace('Array<', '').replace('>', '');
+		}
 		return switch(type) {
 			case 'Int': Std.parseInt;
 			case 'Float': Std.parseFloat;
@@ -88,74 +103,31 @@ class CommanderTools
 	/**
 	 * Haxe doesn't have good ways of collapsing function arguments
 	 */
-	static function getOptions(arg1 :Dynamic, arg2 :Dynamic, arg3 :Dynamic, arg4 :Dynamic, arg5 :Dynamic, arg6 :Dynamic, arg7 :Dynamic)
+	static function getArguments(arg1 :Dynamic, arg2 :Dynamic, arg3 :Dynamic, arg4 :Dynamic, arg5 :Dynamic, arg6 :Dynamic, arg7 :Dynamic, arg8 :Dynamic, arg9 :Dynamic, arg10 :Dynamic, arg11 :Dynamic)
 	{
-		if (arg7 == null) {
-			if (arg6 == null) {
-				if (arg5 == null) {
-					if (arg4 == null) {
-						if (arg3 == null) {
-							if (arg2 == null) {
-								if (arg1 == null) {
-									trace('Should not be here');
-									return null;
-								} else {
-									return arg1;
-								}
-							} else {
-								return arg2;
-							}
-						} else {
-							return arg3;
-						}
-					} else {
-						return arg4;
-					}
-				} else {
-					return arg5;
-				}
-			} else {
-				return arg6;
-			}
-		} else {
-			return arg7;
-		}
-	}
-
-	/**
-	 * Haxe doesn't have good ways of collapsing function arguments
-	 */
-	static function getArguments(arg1 :Dynamic, arg2 :Dynamic, arg3 :Dynamic, arg4 :Dynamic, arg5 :Dynamic, arg6 :Dynamic, arg7 :Dynamic)
-	{
-		if (arg7 == null) {
-			if (arg6 == null) {
-				if (arg5 == null) {
-					if (arg4 == null) {
-						if (arg3 == null) {
-							if (arg2 == null) {
-								if (arg1 == null) {
-									trace('Should not be here');
-									return null;
-								} else {
-									return [];
-								}
-							} else {
-								return [arg1];
-							}
-						} else {
-							return [arg1, arg2];
-						}
-					} else {
-						return [arg1, arg2, arg3];
-					}
-				} else {
-					return [arg1, arg2, arg3, arg4];
-				}
-			} else {
-				return [arg1, arg2, arg3, arg4, arg5];
-			}
-		} else {
+		if (arg11 == null && arg10 != null) {
+			return [arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9];
+		} else if (arg10 == null && arg9 != null) {
+			return [arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8];
+		} else if (arg9 == null && arg8 != null) {
+			return [arg1, arg2, arg3, arg4, arg5, arg6, arg7];
+		} else if (arg8 == null && arg7 != null) {
 			return [arg1, arg2, arg3, arg4, arg5, arg6];
+		} else if (arg7 == null && arg6 != null) {
+			return [arg1, arg2, arg3, arg4, arg5];
+		} else if (arg6 == null && arg5 != null) {
+			return [arg1, arg2, arg3, arg4];
+		} else if (arg5 == null && arg4 != null) {
+			return [arg1, arg2, arg3];
+		} else if (arg4 == null && arg3 != null) {
+			return [arg1, arg2];
+		} else if (arg3 == null && arg2 != null) {
+			return [arg1];
+		} else if (arg2 == null && arg1 != null) {
+			return [];
+		} else {
+			trace('Should not be here');
+			return [];
 		}
 	}
 }

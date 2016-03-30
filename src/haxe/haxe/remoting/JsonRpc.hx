@@ -54,4 +54,6 @@ class JsonRpcConstants
 {
 	inline public static var JSONRPC_VERSION_2 = '2.0';
 	inline public static var MULTIPART_JSONRPC_KEY = 'jsonrpc';
+	/** If the client is not tracking request ids, use an id that is marked as ignored */
+	inline public static var JSONRPC_NULL_ID = '_';
 }

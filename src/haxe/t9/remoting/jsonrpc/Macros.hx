@@ -29,7 +29,7 @@ typedef MacroContext=haxe.macro.Context;
   */
 class Macros
 {
-	static var metaKey = 'rpc';
+	static var META_KEY_RPC = 'rpc';
 	/**
 	 * This takes in a number of classes (not instances) and extracts the
 	 * remoting methods in JSON method definitions that can then be used
@@ -76,7 +76,7 @@ class Macros
 			}
 
 			for (field in fields) {
-				if (field.meta.has(metaKey)) {
+				if (field.meta.has(META_KEY_RPC)) {
 					var definition :RemoteMethodDefinition = {'method':'$className.${field.name}', field:field.name, args:[], alias:null, isStatic:statics.exists(field)};
 					remoteDefinitions.push(definition);
 					var functionArgs;
@@ -92,7 +92,7 @@ class Macros
 								definition.args.push(methodArgument);
 							}
 
-							var metaRpc = field.meta.extract(metaKey).find(function(x) return x.name == metaKey);
+							var metaRpc = field.meta.extract(META_KEY_RPC).find(function(x) return x.name == META_KEY_RPC);
 							if (metaRpc.params != null) {
 								for (param in metaRpc.params) {
 									switch(param.expr) {
@@ -150,6 +150,10 @@ class Macros
 																				if (argItemValue.length > 1) {
 																					Context.error('$className.${field.name}: @rpc{"args":{"$argumentKey":{"short":"$argItemValue"}}} "$argItemValue" is too long. "short" values must be a single character.', pos);
 																				}
+																				if (!arg.optional) {
+																					trace('arg=${arg}');
+																					Context.error('$className.${field.name}: @rpc{"args":{"$argumentKey":{"short":"$argItemValue"}}} "short" options are only valid for optional arguments.', pos);
+																				}
 																				arg.short = argItemValue;
 																			} else {
 																				Context.error('$className.${field.name}: @rpc{"args":{"$argumentKey":{"$argItemKey":"$argItemValue"}}} "$argItemKey" is not a recogized key: [doc,short]', pos);
@@ -196,12 +200,12 @@ class Macros
 								}
 							}
 							functionArgs = args;
-						default: throw '"@$metaKey" metadata on a variable ${field.name}, only allowed on methods.';
+						default: throw '"@$META_KEY_RPC" metadata on a variable ${field.name}, only allowed on methods.';
 					}
 
 					switch(field.kind) {
 						case FMethod(k):
-						default: throw '"@$metaKey" metadata on a variable ${field.name}, only allowed on methods.';
+						default: throw '"@$META_KEY_RPC" metadata on a variable ${field.name}, only allowed on methods.';
 					}
 				}
 			}
@@ -231,7 +235,7 @@ class Macros
 			case TInst(t, params):
 				var fields = t.get().fields.get();
 				for (field in fields) {
-					if (field.meta.has('rpc')) {
+					if (field.meta.has(META_KEY_RPC)) {
 						var promiseType;
 						var functionArgs;
 						switch(TypeTools.follow(field.type)) {

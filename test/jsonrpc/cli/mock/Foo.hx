@@ -12,12 +12,10 @@ class Foo
 		doc:'foo description',
 		args:{
 			arg1: {
-				doc: 'arg1doc',
-				short: 'a'
+				doc: 'arg1doc'
 			},
-			arg2: {
-				doc: 'arg2doc',
-				short: 'z'
+			args2: {
+				doc: 'args2doc'
 			},
 			arg3: {
 				doc: 'arg3doc',
@@ -25,7 +23,7 @@ class Foo
 			}
 		}
 	})
-	public function foo(arg1 :Int, arg2 :String, ?arg3 :String = 'defaultVal', ?arg4 :Bool = false) :Promise<String>
+	public function foo(arg1 :Int, args2 :Array<String>, ?arg3 :String = 'defaultVal', ?arg4 :Bool = false) :Promise<String>
 	{
 		return null;
 	}
