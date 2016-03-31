@@ -44,7 +44,9 @@ class JsonRpcConnectionHttpPost
 		return callInternal(request)
 			.then(function(response: ResponseDef) {
 				if (response.error != null) {
-					throw response.error;
+					//Add the request to the error object for better error tracking
+					Reflect.setField(response.error, 'request', request);
+					throw Json.stringify(response.error, null, '  ');
 				}
 				return response.result;
 			});
