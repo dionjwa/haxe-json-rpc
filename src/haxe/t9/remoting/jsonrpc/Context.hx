@@ -2,6 +2,7 @@ package t9.remoting.jsonrpc;
 
 import haxe.Json;
 import haxe.remoting.JsonRpc;
+import t9.remoting.jsonrpc.RemoteMethodDefinition;
 import haxe.rtti.Meta;
 
 import promhx.Promise;
@@ -20,7 +21,7 @@ class Context
 	@:allow(js.npm.JsonRpcExpressTools)
 #end
 	var _methods :Map<String, RequestDef->Promise<Dynamic>>;
-	var _methodDefinitions :Array<t9.remoting.jsonrpc.RemoteMethodDefinition> = [];
+	var _methodDefinitions :Array<RemoteMethodDefinition> = [];
 
 	public function new ()
 	{
@@ -40,6 +41,11 @@ class Context
 	public function methods() :Array<String>
 	{
 		return [for (s in _methods.keys()) s];
+	}
+
+	public function methodDefinitions() :Array<RemoteMethodDefinition>
+	{
+		return _methodDefinitions.concat([]);
 	}
 
 	/**

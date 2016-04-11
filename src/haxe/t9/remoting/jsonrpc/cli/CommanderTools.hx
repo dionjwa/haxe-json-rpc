@@ -32,7 +32,7 @@ class CommanderTools
 			var nonOptionalArgs = definition.args.filter(function(v) return !v.optional);
 			for (i in 0...nonOptionalArgs.length) {
 				var arg = nonOptionalArgs[i];
-				commandName += ' <${arg.name}>';
+				commandName += ' [${arg.name}]';
 				if (i == (nonOptionalArgs.length - 1) && arg.type.startsWith('Array<')) {
 					//Last argument can be variadic
 					commandName += ' [more${arg.name}...]';

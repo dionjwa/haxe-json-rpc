@@ -119,7 +119,7 @@ class Routes
 	 * @param  context :Context      [description]
 	 * @return         [description]
 	 */
-	public static function generateGetRequestHandler (context :Context)
+	public static function generateGetRequestHandler (context :Context, ?pathPrefix :String)
 	{
 		return function(req :IncomingMessage, res :ServerResponse, next :?Dynamic->Void) :Void {
 			if (req.method != 'GET') {
@@ -134,6 +134,15 @@ class Routes
 				if (next != null) {
 					next();
 				}
+				return;
+			}
+
+			//If the path is just the RPC path, return all API definitions.
+			if (pathPrefix != null && path.replace(pathPrefix, '').length == 0) {
+				res.setHeader("Content-Type", "application/json");
+				var definitions = context.methodDefinitions();
+				res.writeHead(200);
+				res.end(Json.stringify(definitions, null, '\t'));
 				return;
 			}
 

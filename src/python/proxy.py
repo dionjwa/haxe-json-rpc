@@ -15,7 +15,7 @@ class JsonRpcProxy:
         def jsonRpcFunction(**kwargs):
             jsonRpcRequest = {
                 'jsonrpc': '2.0',
-                'id': 1,
+                'id': '_', #'_' means this client is not managing jsonrpc ids.
                 'method': method,
                 'params': {}
             }
