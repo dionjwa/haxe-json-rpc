@@ -155,22 +155,29 @@ class Routes
 				params: parts.query
 			}
 
-			res.setHeader("Content-Type", "application/json");
-
 			try {
 				var promise = context.handleRpcRequest(body);
 				promise
 					.then(function(rpcResponse :ResponseDef) {
 						if (rpcResponse.error == null) {
-							res.writeHead(200);
+							if (untyped __js__('rpcResponse.result instanceof stream.Stream')) {
+								var readable :IReadable = rpcResponse.result;
+								res.setHeader("Content-Type", "application/octet-stream");
+								readable.pipe(res);
+							} else {
+								res.setHeader("Content-Type", "application/json");
+								res.writeHead(200);
+								res.end(Json.stringify(rpcResponse, null, '\t'));
+							}
 						} else {
+							res.setHeader("Content-Type", "application/json");
 							if (rpcResponse.error.code == 0 || rpcResponse.error.code == null) {
 								res.writeHead(200);
 							} else {
 								res.writeHead(500);
 							}
+							res.end(Json.stringify(rpcResponse, null, '\t'));
 						}
-						res.end(Json.stringify(rpcResponse, null, '\t'));
 					})
 					.catchError(function(err) {
 						var responseError :ResponseDef = {
@@ -178,8 +185,8 @@ class Routes
 							error: {code:-32700, message:err},
 							jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 						};
+						res.setHeader("Content-Type", "application/json");
 						res.writeHead(500);
-						trace('responseError=${responseError}');
 						res.end(Json.stringify(responseError, null, '\t'));
 					});
 			} catch (e :Dynamic) {
@@ -188,6 +195,7 @@ class Routes
 					error: {code:-32700, message:'Invalid JSON was received by the server.', data:e},
 					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 				};
+				res.setHeader("Content-Type", "application/json");
 				res.writeHead(500);
 				res.end(Json.stringify(responseError, null, '\t'));
 			}
