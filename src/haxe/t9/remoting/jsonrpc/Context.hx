@@ -152,12 +152,8 @@ class Context
 							jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 						};
 						return Promise.promise(responseError);
-					})
-					.then(function(response :ResponseDef) {
-						return response;
 					});
 			} catch(err :Dynamic) {
-				trace('err=${err}');
 				var responseError :ResponseDef = {
 					id :request.id,
 					error: {code:-32603, message:'Method threw exception="${request.method}"', data:err},
