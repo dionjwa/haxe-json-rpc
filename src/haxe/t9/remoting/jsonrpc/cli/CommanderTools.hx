@@ -58,7 +58,7 @@ class CommanderTools
 				var request :RequestDef = {
 					id: JsonRpcConstants.JSONRPC_NULL_ID,
 					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2,
-					method: definition.method,
+					method: definition.alias != null ? definition.alias : definition.method,
 					params: {}
 				}
 				var requiredArgs = definition.args.filter(function(v) return !v.optional).array();

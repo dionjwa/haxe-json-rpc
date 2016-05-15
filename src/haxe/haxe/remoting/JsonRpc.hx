@@ -43,6 +43,7 @@ typedef ResponseDef = { > JsonRpcMessage,
 typedef ResponseDefSuccess<T> = { > JsonRpcMessage,
 	var id :Dynamic;
 	var result :T;
+	@:optional var error :ResponseError;
 }
 
 typedef ResponseDefError = { > JsonRpcMessage,
