@@ -5,12 +5,11 @@
   "tags": ["json", "json-rpc", "jsonrpc", "websockets", "js", "javascript", "remoting"],
   "classPath": "src/haxe",
   "description": "JSON remoting calls over http and websockets",
-  "version": "1.3.6",
-  "releasenote": "Commander variadic non-optional arguments",
+  "version": "1.3.7",
+  "releasenote": "Small improvements in buffers.",
   "contributors": ["dionjwa"],
   "dependencies": {
     "promhx": "1.0.21",
-    "logshim": "0.0.3",
-    "tink_macro": "0.6.4"
+    "logshim": "0.0.3"
   }
 }

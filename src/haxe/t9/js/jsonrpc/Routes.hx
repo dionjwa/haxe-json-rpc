@@ -11,6 +11,7 @@ import t9.remoting.jsonrpc.Context;
 	import js.node.Http;
 	import js.node.http.*;
 	import js.node.stream.Readable;
+	import js.node.buffer.Buffer;
 #end
 
 using StringTools;
@@ -51,31 +52,20 @@ class Routes
 			}
 
 			//Get the POST data
-			req.setEncoding('utf8');
-			var content = "";
-
-			var dataListener = function(chunk) {
-				content += chunk;
-			};
-			req.addListener(ReadableEvent.Data, dataListener);
+			var buffer :Buffer = null;
+			req.addListener(ReadableEvent.Data, function(chunk) {
+				if (buffer == null) {
+					buffer = chunk;
+				} else {
+					buffer = Buffer.concat([buffer, chunk]);
+				}
+			});
 
 			req.addListener(ReadableEvent.End, function() {
-				req.removeListener(ReadableEvent.Data, dataListener);
 				res.setHeader('Content-Type', 'application/json');
-
+				var content = buffer.toString('utf8');
 				try {
 					var body :RequestDef = Json.parse(content);
-					// if (body.method == null || body.method == '' || !context.exists(body.method)) {
-					// 	var responseError :ResponseDef = {
-					// 		id :body.id,
-					// 		error: {code:-32601, message:'The method="${body.method}" does not exist / is not available. Available methods=[' + context.methods().join(',') + ']'},
-					// 		jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
-					// 	};
-					// 	res.writeHead(400);
-					// 	res.end(Json.stringify(responseError, null, '\t'));
-					// 	return;
-					// }
-
 					var promise = context.handleRpcRequest(body);
 					promise
 						.then(function(rpcResponse :ResponseDef) {
@@ -85,6 +75,7 @@ class Routes
 								if (rpcResponse.error.code == 0 || rpcResponse.error.code == null) {
 									res.writeHead(200);
 								} else {
+									Log.error(rpcResponse);
 									res.writeHead(500);
 								}
 							}
@@ -93,19 +84,20 @@ class Routes
 						.catchError(function(err) {
 							var responseError :ResponseDef = {
 								id :body.id,
-								error: {code:-32700, message:err},
+								error: {code:-32700, message:err.toString()},
 								jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 							};
+							Log.error(responseError);
 							res.writeHead(500);
-							trace('responseError=${responseError}');
 							res.end(Json.stringify(responseError, null, '\t'));
 						});
-				} catch (e :Dynamic) {
+				} catch (err :Dynamic) {
 					var responseError :ResponseDef = {
 						id :0,
-						error: {code:-32700, message:'Invalid JSON was received by the server.', data:content},
+						error: {code:-32700, message:'Invalid JSON was received by the server.\n' + err.toString(), data:content},
 						jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 					};
+					Log.error(responseError);
 					res.writeHead(500);
 					res.end(Json.stringify(responseError, null, '\t'));
 				}

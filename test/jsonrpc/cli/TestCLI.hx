@@ -39,7 +39,7 @@ class TestCLI extends PromiseTest
 		var out :js.node.Buffer = untyped __js__('require("child_process").execSync("haxe test/jsonrpc/cli/mock/main.hxml")');
 		var out :js.node.Buffer = untyped __js__('require("child_process").execSync("build/test/cli_test.js aliasToFoo --arg3=testVal --arg4=true 1 arg2_1 arg2_2 arg2_3")');
 		var json :RequestDef = Json.parse(out.toString());
-		assertEquals(json.method, 'jsonrpc.cli.mock.Foo.foo');
+		assertEquals(json.method, 'aliasToFoo');
 		assertEquals(json.params.arg1, 1);
 		switch(json.params.args2) {
 			case ['arg2_1', 'arg2_2', 'arg2_3']://Success
@@ -51,7 +51,7 @@ class TestCLI extends PromiseTest
 		//Same as above but different variadic args
 		var out :js.node.Buffer = untyped __js__('require("child_process").execSync("build/test/cli_test.js aliasToFoo --arg3=testVal --arg4=true 1 arg2_1")');
 		var json :RequestDef = Json.parse(out.toString());
-		assertEquals(json.method, 'jsonrpc.cli.mock.Foo.foo');
+		assertEquals(json.method, 'aliasToFoo');
 		assertEquals(json.params.arg1, 1);
 		switch(json.params.args2) {
 			case ['arg2_1']://Success
