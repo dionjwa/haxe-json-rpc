@@ -26,6 +26,7 @@ typedef RemoteMethodDefinition = {
 	var field :String;
 	var method :String;
 	@:optional var doc :String;
+	@:optional var docCustom :String;
 	@:optional var alias :String;
 	var args :Array<RemoteMethodArgument>;
 	var isStatic :Bool;

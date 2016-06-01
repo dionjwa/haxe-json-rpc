@@ -77,7 +77,7 @@ class Macros
 
 			for (field in fields) {
 				if (field.meta.has(META_KEY_RPC)) {
-					var definition :RemoteMethodDefinition = {'method':'$className.${field.name}', field:field.name, args:[], alias:null, isStatic:statics.exists(field)};
+					var definition :RemoteMethodDefinition = {'method':'$className.${field.name}', field:field.name, args:[], alias:null, docCustom:null, isStatic:statics.exists(field)};
 					remoteDefinitions.push(definition);
 					var functionArgs;
 					switch(TypeTools.follow(field.type)) {
@@ -169,6 +169,12 @@ class Macros
 														case EConst(CString(s)):
 															definition.doc = s;
 														default: Context.error('$className.${field.name}: rpc metadata ' + "'doc' field must be an String.", pos);
+													}
+												} else if (metaObjectField.field == 'docCustom') {
+													switch(metaObjectField.expr.expr) {
+														case EConst(CString(s)):
+															definition.docCustom = s;
+														default: Context.error('$className.${field.name}: rpc metadata ' + "'docCustom' field must be an String.", pos);
 													}
 												} else if (metaObjectField.field == 'short') {
 													switch(metaObjectField.expr.expr) {

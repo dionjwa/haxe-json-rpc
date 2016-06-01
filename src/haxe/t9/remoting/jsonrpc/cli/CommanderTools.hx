@@ -86,6 +86,11 @@ class CommanderTools
 				}
 				jsonrpcCallback(request);
 			});
+			if (definition.docCustom != null) {
+				command.on('--help', function() {
+					js.Node.process.stdout.write(definition.docCustom + '\n');
+				});
+			}
 		}
 	}
 
