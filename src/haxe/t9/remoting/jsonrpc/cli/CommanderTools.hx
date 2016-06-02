@@ -28,69 +28,74 @@ class CommanderTools
 	public static function addCommands(program :Commander, definitions :Array<RemoteMethodDefinition>, jsonrpcCallback :RequestDef->Void)
 	{
 		for (definition in definitions) {
-			var commandName = definition.alias != null ? definition.alias : definition.method;
-			var nonOptionalArgs = definition.args.filter(function(v) return !v.optional);
-			for (i in 0...nonOptionalArgs.length) {
-				var arg = nonOptionalArgs[i];
-				commandName += ' [${arg.name}]';
-				if (i == (nonOptionalArgs.length - 1) && arg.type.startsWith('Array<')) {
-					//Last argument can be variadic
-					commandName += ' [more${arg.name}...]';
-				}
+			addCommand(program, definition, jsonrpcCallback);
+		}
+	}
+
+	public static function addCommand(program :Commander, definition :RemoteMethodDefinition, jsonrpcCallback :RequestDef->Void)
+	{
+		var commandName = definition.alias != null ? definition.alias : definition.method;
+		var nonOptionalArgs = definition.args.filter(function(v) return !v.optional);
+		for (i in 0...nonOptionalArgs.length) {
+			var arg = nonOptionalArgs[i];
+			commandName += ' [${arg.name}]';
+			if (i == (nonOptionalArgs.length - 1) && arg.type.startsWith('Array<')) {
+				//Last argument can be variadic
+				commandName += ' [more${arg.name}...]';
 			}
-			var command = program.command(commandName);
-			command.description(definition.doc);
-			for (arg in definition.args.filter(function(v) return v.optional)) {
-				var optionalArgString = '--${arg.name} [${arg.name}]';
-				if (arg.short != null) {
-					optionalArgString = '-${arg.short}, ' + optionalArgString;
-				}
+		}
+		var command = program.command(commandName);
+		command.description(definition.doc);
+		for (arg in definition.args.filter(function(v) return v.optional)) {
+			var optionalArgString = '--${arg.name} [${arg.name}]';
+			if (arg.short != null) {
+				optionalArgString = '-${arg.short}, ' + optionalArgString;
+			}
 
-				if (arg.type.startsWith('Array<')) {
-					var collectedVal = [];
+			if (arg.type.startsWith('Array<')) {
+				var collectedVal = [];
 
-					command.option(optionalArgString, arg.doc, function(val, memo) {trace('val=$val'); memo.push(val); return memo;}, []);
+				command.option(optionalArgString, arg.doc, function(val, memo) {trace('val=$val'); memo.push(val); return memo;}, []);
+			} else {
+				command.option(optionalArgString, arg.doc, getConverter(arg.type));
+			}
+		}
+
+		command.action(function(arg1 :Dynamic, arg2 :Dynamic, arg3 :Dynamic, arg4 :Dynamic, arg5 :Dynamic, arg6 :Dynamic, arg7 :Dynamic, arg8 :Dynamic, arg9 :Dynamic, arg10 :Dynamic, arg11 :Dynamic) {
+			var arguments :Array<Dynamic> = untyped __js__('Array.prototype.slice.call(arguments)');
+			arguments.pop();
+			var request :RequestDef = {
+				id: JsonRpcConstants.JSONRPC_NULL_ID,
+				jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2,
+				method: definition.alias != null ? definition.alias : definition.method,
+				params: {}
+			}
+			var requiredArgs = definition.args.filter(function(v) return !v.optional).array();
+			var optionalArgs = definition.args.filter(function(v) return v.optional).array();
+			for (i in 0...requiredArgs.length) {
+				var arg = requiredArgs[i];
+				var converter = getConverter(arg.type);
+				if (arg.type.startsWith('Array<') && i == (requiredArgs.length - 1) && arguments[i + 1] != null) {
+					var arrArgs :Array<Dynamic> = arguments[i + 1];
+					if (arguments[i] != null) {
+						arrArgs.unshift(arguments[i]);
+					}
+					Reflect.setField(request.params, arg.name, arrArgs.map(converter));
 				} else {
-					command.option(optionalArgString, arg.doc, getConverter(arg.type));
+					Reflect.setField(request.params, arg.name, converter(arguments[i]));
 				}
 			}
-
-			command.action(function(arg1 :Dynamic, arg2 :Dynamic, arg3 :Dynamic, arg4 :Dynamic, arg5 :Dynamic, arg6 :Dynamic, arg7 :Dynamic, arg8 :Dynamic, arg9 :Dynamic, arg10 :Dynamic, arg11 :Dynamic) {
-				var arguments :Array<Dynamic> = untyped __js__('Array.prototype.slice.call(arguments)');
-				arguments.pop();
-				var request :RequestDef = {
-					id: JsonRpcConstants.JSONRPC_NULL_ID,
-					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2,
-					method: definition.alias != null ? definition.alias : definition.method,
-					params: {}
+			for (arg in optionalArgs) {
+				if (Reflect.hasField(command, arg.name)) {
+					Reflect.setField(request.params, arg.name, Reflect.field(command, arg.name));
 				}
-				var requiredArgs = definition.args.filter(function(v) return !v.optional).array();
-				var optionalArgs = definition.args.filter(function(v) return v.optional).array();
-				for (i in 0...requiredArgs.length) {
-					var arg = requiredArgs[i];
-					var converter = getConverter(arg.type);
-					if (arg.type.startsWith('Array<') && i == (requiredArgs.length - 1) && arguments[i + 1] != null) {
-						var arrArgs :Array<Dynamic> = arguments[i + 1];
-						if (arguments[i] != null) {
-							arrArgs.unshift(arguments[i]);
-						}
-						Reflect.setField(request.params, arg.name, arrArgs.map(converter));
-					} else {
-						Reflect.setField(request.params, arg.name, converter(arguments[i]));
-					}
-				}
-				for (arg in optionalArgs) {
-					if (Reflect.hasField(command, arg.name)) {
-						Reflect.setField(request.params, arg.name, Reflect.field(command, arg.name));
-					}
-				}
-				jsonrpcCallback(request);
+			}
+			jsonrpcCallback(request);
+		});
+		if (definition.docCustom != null) {
+			command.on('--help', function() {
+				js.Node.process.stdout.write(definition.docCustom + '\n');
 			});
-			if (definition.docCustom != null) {
-				command.on('--help', function() {
-					js.Node.process.stdout.write(definition.docCustom + '\n');
-				});
-			}
 		}
 	}
 
