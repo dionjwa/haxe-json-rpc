@@ -55,7 +55,7 @@ class CommanderTools
 			if (arg.type.startsWith('Array<')) {
 				var collectedVal = [];
 
-				command.option(optionalArgString, arg.doc, function(val, memo) {trace('val=$val'); memo.push(val); return memo;}, []);
+				command.option(optionalArgString, arg.doc, function(val, memo) {memo.push(val); return memo;}, []);
 			} else {
 				command.option(optionalArgString, arg.doc, getConverter(arg.type));
 			}
