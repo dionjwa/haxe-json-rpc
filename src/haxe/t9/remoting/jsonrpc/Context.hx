@@ -117,18 +117,11 @@ class Context
 			var promise :Promise<Dynamic> = Reflect.callMethod(service, method, params);
 			return promise;
 		}
-		var methodName = methodDef.method;
+		var methodName = methodDef.alias != null ? methodDef.alias : methodDef.method;
 		if (_methods.exists(methodName)) {
 			throw 'Context.bindMethod already has a binding for $methodName';
 		}
 		_methods.set(methodName, call);
-
-		if (methodDef.alias != null) {
-			if (_methods.exists(methodDef.alias)) {
-				throw 'Context.bindMethod already has a binding for ${methodDef.alias}';
-			}
-			_methods.set(methodDef.alias, call);
-		}
 	}
 
 	public function handleRpcRequest(request :RequestDef) :Promise<ResponseDef>
