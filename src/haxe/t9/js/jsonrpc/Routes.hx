@@ -142,7 +142,7 @@ class Routes
 
 			var body :RequestDef = {
 				jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2,
-				id:'1',
+				id:JSONRPC_NULL_ID,
 				method: pathTokens[pathTokens.length - 1],
 				params: parts.query
 			}
