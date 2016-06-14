@@ -84,7 +84,7 @@ class Routes
 						.catchError(function(err) {
 							var responseError :ResponseDef = {
 								id :body.id,
-								error: {code:-32700, message:err.toString()},
+								error: {code:-32700, message:err.toString(), data:body},
 								jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 							};
 							Log.error(responseError);
