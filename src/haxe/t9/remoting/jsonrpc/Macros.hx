@@ -52,7 +52,20 @@ class Macros
 		var remoteDefinitions = getMethodDefinitionsInternal(classNames);
 		return macro $v {remoteDefinitions};
 	}
+
+	/**
+	  * Takes a server remoting class and the connection variable,
+	  * and returns an instance of the newly created proxy class.
+	  */
+	macro
+	public static function buildRpcClient(classExpr: Expr, ?include_server_logic :Bool = false) :Expr
+	{
+		var typePath = buildRpcClientClass(classExpr, include_server_logic);
+		return macro new $typePath ();
+	}
+
 #if macro
+
 	public static function getMethodDefinitionsInternal(classes:Array<String>) :Array<RemoteMethodDefinition>
 	{
 		var pos = haxe.macro.Context.currentPos();
@@ -218,14 +231,12 @@ class Macros
 		}
 		return remoteDefinitions;
 	}
-#end
 
 	/**
 	  * Takes a server remoting class and the connection variable,
 	  * and returns an instance of the newly created proxy class.
 	  */
-	macro
-	public static function buildRpcClient(classExpr: Expr, ?include_server_logic :Bool = false) :Expr
+	static function buildRpcClientClass(classExpr: Expr, ?include_server_logic :Bool = false) :TypePath
 	{
 		var pos = Context.currentPos();
 
@@ -233,7 +244,7 @@ class Macros
 		if (className == null || className == "") {
 			throw className + " not found. Maybe specify the entire class identifier?";
 		}
-		var proxyClassName = (className.lastIndexOf('.') > -1 ? className.substr(className.lastIndexOf('.') + 1) : className ) + "Proxy" + (Std.int(Math.random() * 100000));
+		var proxyClassName = (className.lastIndexOf('.') > -1 ? className.substr(className.lastIndexOf('.') + 1) : className ) + "Proxy";
 
 		var rpcType = Context.getType(className);
 		var newFields = [];
@@ -340,10 +351,9 @@ class Macros
 		haxe.macro.Context.defineType(c);
 		var type = TypeTools.toComplexType(Context.getType(proxyClassName));
 		var typePath :TypePath = {name:proxyClassName, pack:[], params:null, sub:null};
-		return macro new $typePath ();
+		return typePath;
 	}
 
-#if macro
 	public static function getClassNameFromClassExpr (classNameExpr :Expr) :String
 	{
 		// trace('classNameExpr=${classNameExpr}');
