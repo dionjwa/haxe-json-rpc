@@ -101,7 +101,7 @@ class Context
 			var params;
 			if (request.params == null) {
 				params = [];
-			} else if (untyped __js__('request.params.constructor === Array')) {
+			} else if (untyped __js__('{0}.params.constructor === Array', request)) {
 				params = request.params;
 			} else {
 				params = [];

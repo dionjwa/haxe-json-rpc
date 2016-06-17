@@ -81,6 +81,9 @@ class JsonRpcConnectionHttpGet
 				promise.boundPromise.reject(err);
 			});
 			res.on(ReadableEvent.End, function () {
+				if (promise.boundPromise.isResolved()) {
+					return;
+				}
 				if (request.id != null) {
 					try {
 						var jsonRes = Json.parse(responseData);
@@ -98,8 +101,10 @@ class JsonRpcConnectionHttpGet
 			});
 		});
 
-		getReq.on('error', function(err) {
-			promise.boundPromise.reject(err);
+		getReq.on(ReadableEvent.Error, function(err) {
+			if (!promise.boundPromise.isResolved()) {
+				promise.boundPromise.reject(err);
+			}
 		});
 
 		getReq.end();
