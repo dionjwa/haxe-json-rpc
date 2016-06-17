@@ -246,6 +246,13 @@ class Macros
 		}
 		var proxyClassName = (className.lastIndexOf('.') > -1 ? className.substr(className.lastIndexOf('.') + 1) : className ) + "Proxy";
 
+		try {
+			var type = TypeTools.toComplexType(Context.getType(proxyClassName));
+			var typePath :TypePath = {name:proxyClassName, pack:[], params:null, sub:null};
+			return typePath;
+		} catch (ignored :Dynamic) {}
+
+
 		var rpcType = Context.getType(className);
 		var newFields = [];
 		switch(rpcType) {
