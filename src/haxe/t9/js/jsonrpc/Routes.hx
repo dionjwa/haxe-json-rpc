@@ -171,7 +171,6 @@ class Routes
 							jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 						};
 						res.writeHead(500);
-						trace('responseError=${responseError}');
 						res.end(Json.stringify(responseError, null, '\t'));
 					});
 			} catch (e :Dynamic) {

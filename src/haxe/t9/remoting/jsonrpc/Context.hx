@@ -97,7 +97,7 @@ class Context
 	{
 		var fieldName = methodDef.field;
 		var method = Reflect.field(service, fieldName);
-		var call = function(request :RequestDef) {
+		var call = function(request :RequestDef) :Promise<Dynamic> {
 			var params;
 			if (request.params == null) {
 				params = [];
@@ -114,8 +114,7 @@ class Context
 					}
 				}
 			}
-			var promise :Promise<Dynamic> = Reflect.callMethod(service, method, params);
-			return promise;
+			return Reflect.callMethod(service, method, params);
 		}
 		var methodName = methodDef.method;
 		if (_methods.exists(methodName)) {
