@@ -79,7 +79,7 @@ class Routes
 									res.writeHead(500);
 								}
 							}
-							res.end(Json.stringify(rpcResponse, null, '\t'));
+							res.end(stringify(rpcResponse));
 						})
 						.catchError(function(err) {
 							var responseError :ResponseDef = {
@@ -89,7 +89,7 @@ class Routes
 							};
 							Log.error(responseError);
 							res.writeHead(500);
-							res.end(Json.stringify(responseError, null, '\t'));
+							res.end(stringify(responseError));
 						});
 				} catch (err :Dynamic) {
 					var responseError :ResponseDef = {
@@ -99,7 +99,7 @@ class Routes
 					};
 					Log.error(responseError);
 					res.writeHead(500);
-					res.end(Json.stringify(responseError, null, '\t'));
+					res.end(stringify(responseError));
 				}
 			});
 		}
@@ -134,7 +134,7 @@ class Routes
 				res.setHeader("Content-Type", "application/json");
 				var definitions = context.methodDefinitions();
 				res.writeHead(200);
-				res.end(Json.stringify(definitions, null, '\t'));
+				res.end(stringify(definitions));
 				return;
 			}
 
@@ -162,7 +162,7 @@ class Routes
 								res.writeHead(500);
 							}
 						}
-						res.end(Json.stringify(rpcResponse, null, '\t'));
+						res.end(stringify(rpcResponse));
 					})
 					.catchError(function(err) {
 						var responseError :ResponseDef = {
@@ -171,7 +171,7 @@ class Routes
 							jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 						};
 						res.writeHead(500);
-						res.end(Json.stringify(responseError, null, '\t'));
+						res.end(stringify(responseError));
 					});
 			} catch (e :Dynamic) {
 				var responseError :ResponseDef = {
@@ -180,8 +180,13 @@ class Routes
 					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 				};
 				res.writeHead(500);
-				res.end(Json.stringify(responseError, null, '\t'));
+				res.end(stringify(responseError));
 			}
 		}
+	}
+
+	inline static function stringify(obj :Dynamic) :String
+	{
+		return Json.stringify(obj, null, '  ');
 	}
 }

@@ -10,6 +10,7 @@
   "contributors": ["dionjwa"],
   "dependencies": {
     "promhx": "1.0.21",
-    "logshim": "0.0.3"
+    "logshim": "0.0.3",
+    "msignal": "1.2.4"
   }
 }

@@ -1,6 +1,7 @@
 package t9.remoting.jsonrpc;
 
 #if (nodejs && !macro)
+	import js.node.Buffer;
 	import js.node.Url;
 	import js.node.Http;
 #end
@@ -32,21 +33,22 @@ class JsonRpcConnectionHttpPost
 	public function request(method :String, ?params :Dynamic) :Promise<Dynamic>
 #end
 	{
-		var request :RequestDef = {
+		var requestObj :RequestDef = {
 			id: (++_idCount) + '',
 			method: method,
 			params: params,
 			jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 		};
 #if python
-		return callInternal(request).result;
+		return callInternal(requestObj).result;
 #else
-		return callInternal(request)
+		return callInternal(requestObj)
 			.then(function(response: ResponseDef) {
 				if (response.error != null) {
 					//Add the request to the error object for better error tracking
-					Reflect.setField(response.error, 'request', request);
-					throw Json.stringify(response.error, null, '  ');
+					// Reflect.setField(response.error, 'request', requestObj);
+					// throw Json.stringify(response.error, null, '  ');
+					throw response.error;
 				}
 				return response.result;
 			});
@@ -108,15 +110,14 @@ class JsonRpcConnectionHttpPost
 		};
 		// Set up the request
 		var postReq = js.node.Http.request(postOptions, function(res) {
-			res.setEncoding('utf8');
-			var responseData = '';
-			res.on('data', function (chunk) {
-				responseData += chunk;
+			var responseData :Buffer = new Buffer(0);
+			res.on('data', function (chunk :Buffer) {
+				responseData = Buffer.concat([responseData, chunk]);
 			});
 			res.on('end', function () {
 				if (request.id != null) {
 					try {
-						var jsonRes = Json.parse(responseData);
+						var jsonRes = Json.parse(responseData.toString('utf8'));
 						deferred.resolve(jsonRes);
 					} catch(err :Dynamic) {
 						deferred.resolve({

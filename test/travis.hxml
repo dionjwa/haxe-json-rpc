@@ -8,7 +8,8 @@
 -lib hxnodejs
 -lib logshim
 -lib promhx
--lib promhx-unit-test:1.1.4
+-lib promhx-unit-test:2.1.0
+-lib msignal:1.2.4
 
 -cp lib/hxnodelibs
 -cp src/haxe
