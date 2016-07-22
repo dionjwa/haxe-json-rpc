@@ -1,7 +1,7 @@
 package t9.remoting.jsonrpc.cli;
 
 import haxe.remoting.JsonRpc;
-import js.npm.Commander;
+import js.npm.commander.Commander;
 
 using Lambda;
 using StringTools;
