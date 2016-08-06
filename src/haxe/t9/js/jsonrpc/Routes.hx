@@ -1,5 +1,6 @@
 package t9.js.jsonrpc;
 
+import haxe.DynamicAccess;
 import haxe.Json;
 import haxe.remoting.JsonRpc;
 
@@ -140,11 +141,24 @@ class Routes
 
 			var pathTokens = path.split('/');
 
+			var query :DynamicAccess<String> = parts.query;
+			var params :DynamicAccess<Dynamic> = {};
+			if (query != null) {
+				for (k in query.keys()) {
+					try {
+						var parsed = Json.parse(query[k]);
+						params[k] = parsed;
+					} catch(err :Dynamic) {
+						params[k] = query[k];
+					}
+				}
+			}
+
 			var body :RequestDef = {
 				jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2,
 				id: JsonRpcConstants.JSONRPC_NULL_ID,
 				method: pathTokens[pathTokens.length - 1],
-				params: parts.query
+				params: params
 			}
 
 			res.setHeader("Content-Type", "application/json");
