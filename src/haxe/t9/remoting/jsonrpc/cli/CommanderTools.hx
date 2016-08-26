@@ -8,6 +8,31 @@ using StringTools;
 
 class CommanderTools
 {
+	public static function handleQuotesInArgs(?rawArgs :Array<String> = null) :Array<String>
+	{
+		rawArgs = rawArgs == null ? js.Node.process.argv.copy() : rawArgs;
+		var formatted = [];
+		var isInQuotes = false;
+		var quoteChar :String = null;
+		while (rawArgs.length > 0) {
+			if (isInQuotes) {
+				var e = rawArgs.shift();
+				formatted[formatted.length - 1] = formatted[formatted.length - 1] + ' ' + e;
+				if (e.endsWith(quoteChar)) {
+					isInQuotes = false;
+				}
+			} else {
+				var e = rawArgs.shift();
+				if (e.startsWith('"') || e.startsWith("'")) {
+					isInQuotes = true;
+					quoteChar = e.charAt(0);
+				}
+				formatted.push(e);
+			}
+		}
+		return formatted;
+	}
+
 	public static function parseCliArgs(definitions :Array<RemoteMethodDefinition>) :RequestDef
 	{
 		var program :Commander = js.Node.require('commander');
@@ -19,7 +44,9 @@ class CommanderTools
 		if (js.Node.process.argv.slice(2).length == 0) {
 			program.outputHelp();
 		} else {
-			program.parse(js.Node.process.argv);
+			var rawArgs :Array<String> = js.Node.process.argv.slice(2);
+			var formatted = handleQuotesInArgs(rawArgs);
+			program.parse(formatted);
 		}
 
 		return requestDef;
@@ -55,7 +82,7 @@ class CommanderTools
 			if (arg.type.startsWith('Array<')) {
 				var collectedVal = [];
 
-				command.option(optionalArgString, arg.doc, function(val, memo) {memo.push(val); return memo;}, []);
+				command.option(optionalArgString, arg.doc, function(val, memo) {memo.push(val); trace('val=$val'); return memo;}, []);
 			} else {
 				command.option(optionalArgString, arg.doc, getConverter(arg.type));
 			}
@@ -85,6 +112,7 @@ class CommanderTools
 					Reflect.setField(request.params, arg.name, converter(arguments[i]));
 				}
 			}
+			var rawArgs :Array<String> = command.parent.rawArgs;
 			for (arg in optionalArgs) {
 				if (Reflect.hasField(command, arg.name)) {
 					Reflect.setField(request.params, arg.name, Reflect.field(command, arg.name));
