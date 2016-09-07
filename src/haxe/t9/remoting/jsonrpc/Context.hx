@@ -1,5 +1,7 @@
 package t9.remoting.jsonrpc;
 
+import t9.util.ColorTraces.*;
+
 import haxe.Json;
 import haxe.remoting.JsonRpc;
 import t9.remoting.jsonrpc.RemoteMethodDefinition;
@@ -151,7 +153,7 @@ class Context
 					.errorPipe(function(err) {
 						var responseError :ResponseDef = {
 							id :request.id,
-							error: {code:-32603, message:'Internal RPC error', data:err},
+							error: {code:-32603, message:'Internal RPC error', data:{error:err, stack:haxe.CallStack.toString(haxe.CallStack.exceptionStack())}},
 							jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 						};
 						return Promise.promise(responseError);
@@ -159,7 +161,7 @@ class Context
 			} catch(err :Dynamic) {
 				var responseError :ResponseDef = {
 					id :request.id,
-					error: {code:-32603, message:'Method threw exception="${request.method}"', data:err},
+					error: {code:-32603, message:'Method threw exception="${request.method}"', data:{error:err, stack:haxe.CallStack.toString(haxe.CallStack.exceptionStack())}},
 					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 				};
 				return Promise.promise(responseError);
