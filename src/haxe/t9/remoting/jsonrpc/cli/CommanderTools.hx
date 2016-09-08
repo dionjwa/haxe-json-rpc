@@ -47,7 +47,7 @@ class CommanderTools
 		var command = program.command(commandName);
 		command.description(definition.doc);
 		for (arg in definition.args.filter(function(v) return v.optional)) {
-			var optionalArgString = '--${arg.name} [${arg.name}]';
+			var optionalArgString = '--${arg.name} [value]';
 			if (arg.short != null) {
 				optionalArgString = '-${arg.short}, ' + optionalArgString;
 			}
