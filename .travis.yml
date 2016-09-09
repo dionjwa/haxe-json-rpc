@@ -12,6 +12,6 @@ before_script:
 haxe:
   - "3.3.0-rc.1"
 node_js:
-  - "4.1"
+  - "4"
 hxml:
   - test/travis.hxml
