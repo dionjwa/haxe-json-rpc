@@ -1,7 +1,5 @@
 package t9.remoting.jsonrpc;
 
-import t9.util.ColorTraces.*;
-
 import haxe.Json;
 import haxe.remoting.JsonRpc;
 import t9.remoting.jsonrpc.RemoteMethodDefinition;
