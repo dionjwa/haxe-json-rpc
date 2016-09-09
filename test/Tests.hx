@@ -13,7 +13,7 @@ class Tests
 			.add(new jsonrpc.RpcWebSocketTest())
 			.add(new jsonrpc.cli.TestCLI())
 
-			.run().onFinish = function() trace("Finished!");
+			.run();
 
 #if (nodejs && !travis)
 		try {

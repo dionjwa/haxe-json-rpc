@@ -1,5 +1,7 @@
 package t9.remoting.jsonrpc;
 
+import t9.util.ColorTraces.*;
+
 import haxe.Json;
 import haxe.remoting.JsonRpc;
 import t9.remoting.jsonrpc.RemoteMethodDefinition;
@@ -13,10 +15,13 @@ import promhx.Deferred;
 	import haxe.macro.Context;
 #end
 
+import msignal.Signal;
+
 using Lambda;
 
 class Context
 {
+	public var rpc (default, null):Signal1<RequestDef> = new Signal1<RequestDef>();
 #if nodejs
 	@:allow(js.npm.JsonRpcExpressTools)
 #end
@@ -97,11 +102,11 @@ class Context
 	{
 		var fieldName = methodDef.field;
 		var method = Reflect.field(service, fieldName);
-		var call = function(request :RequestDef) {
+		var call = function(request :RequestDef) :Promise<Dynamic> {
 			var params;
 			if (request.params == null) {
 				params = [];
-			} else if (untyped __js__('request.params.constructor === Array')) {
+			} else if (untyped __js__('{0}.params.constructor === Array', request)) {
 				params = request.params;
 			} else {
 				params = [];
@@ -114,8 +119,7 @@ class Context
 					}
 				}
 			}
-			var promise :Promise<Dynamic> = Reflect.callMethod(service, method, params);
-			return promise;
+			return Reflect.callMethod(service, method, params);
 		}
 		var methodName = methodDef.method;
 		if (_methods.exists(methodName)) {
@@ -133,6 +137,7 @@ class Context
 
 	public function handleRpcRequest(request :RequestDef) :Promise<ResponseDef>
 	{
+		rpc.dispatch(request);
 		if (exists(request.method)) {
 			var call = _methods.get(request.method);
 			try {
@@ -148,7 +153,7 @@ class Context
 					.errorPipe(function(err) {
 						var responseError :ResponseDef = {
 							id :request.id,
-							error: {code:-32603, message:'Internal RPC error', data:err},
+							error: {code:-32603, message:'Internal RPC error', data:{error:err, stack:haxe.CallStack.toString(haxe.CallStack.exceptionStack())}},
 							jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 						};
 						return Promise.promise(responseError);
@@ -156,7 +161,7 @@ class Context
 			} catch(err :Dynamic) {
 				var responseError :ResponseDef = {
 					id :request.id,
-					error: {code:-32603, message:'Method threw exception="${request.method}"', data:err},
+					error: {code:-32603, message:'Method threw exception="${request.method}"', data:{error:err, stack:haxe.CallStack.toString(haxe.CallStack.exceptionStack())}},
 					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 				};
 				return Promise.promise(responseError);
