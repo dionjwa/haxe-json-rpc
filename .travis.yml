@@ -1,5 +1,9 @@
 language: haxe
+
 sudo: true
+env:
+  - TRAVIS_NODE_VERSION="5.11"
+
 # Handle git submodules yourself
 git:
     submodules: false
@@ -7,12 +11,13 @@ git:
 before_install:
   - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
   - git submodule update --init --recursive
-before_script:
+
+install:
+  - rm -rf ~/.nvm && git clone https://github.com/creationix/nvm.git ~/.nvm && (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`) && source ~/.nvm/nvm.sh && nvm install $TRAVIS_NODE_VERSION
   - npm install
-  - node --version
+  - yes | haxelib install test/travis.hxml
+
 haxe:
   - "3.3.0-rc.1"
-node_js:
-  - "4"
 hxml:
   - test/travis.hxml
