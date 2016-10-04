@@ -122,7 +122,7 @@ class JsonRpcConnectionHttpPost
 					} catch(err :Dynamic) {
 						deferred.resolve({
 							id :request.id,
-							error: {code:-32603, message:'Invalid JSON was received by the client.', data:responseData},
+							error: {code:-32603, message:'Invalid JSON was received by the client.', data:Std.string(responseData)},
 							jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 						});
 					}
@@ -145,6 +145,12 @@ class JsonRpcConnectionHttpPost
 
 		h.setPostData(Json.stringify(request));
 
+		var status :Int = -1;
+
+		h.onStatus = function(s) {
+			status = s;
+		};
+
 		h.onData = function(response :String) {
 			try {
 				var ret = Json.parse(response);
@@ -152,7 +158,7 @@ class JsonRpcConnectionHttpPost
 			} catch( err : Dynamic ) {
 				deferred.resolve({
 					id :request.id,
-					error: {code:-32603, message:'Invalid JSON was received by the client.', data:response},
+					error: {code:-32603, httpStatusCode:status, message:'Invalid JSON was received by the client.', data:Std.string(response)},
 					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 				});
 			}
@@ -160,7 +166,7 @@ class JsonRpcConnectionHttpPost
 		h.onError = function(err) {
 			deferred.resolve({
 				id :request.id,
-				error: {code:-32603, message:'Error on request', data:err},
+				error: {code:-32603, message:'Error on request', data:Std.string(err)},
 				jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 			});
 		};
