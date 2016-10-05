@@ -37,11 +37,23 @@ class JsonRpcConnectionWebSocket
 		incoming = _deferredIncomingMessages.stream();
 	}
 
+	public function dispose()
+	{
+		if (this.incoming != null) {
+			this.incoming.end();
+			this.incoming = null;
+		}
+		if (_ws != null) {
+			_ws.close();
+			_ws = null;
+		}
+	}
+
 	function handleIncomingMessage(message :RequestDef)
 	{
-		var incoming :IncomingObj<Dynamic> = cast message;
+		var incomingMessage :IncomingObj<Dynamic> = cast message;
 		if (message.id != null) {
-			incoming.sendResponse = function(val :Dynamic) {
+			incomingMessage.sendResponse = function(val :Dynamic) {
 				var response :ResponseDefSuccess<Dynamic> = {id:message.id, result:val, jsonrpc:JsonRpcConstants.JSONRPC_VERSION_2};
 				var responseString = Json.stringify(response);
 				getConnection()
@@ -49,7 +61,7 @@ class JsonRpcConnectionWebSocket
 						ws.send(responseString);
 					});
 			};
-			incoming.sendError = function(err :ResponseError) {
+			incomingMessage.sendError = function(err :ResponseError) {
 				var responseErrorDef :ResponseDefError = {id:message.id, error:err, jsonrpc:JsonRpcConstants.JSONRPC_VERSION_2};
 				var errorString = Json.stringify(responseErrorDef);
 				getConnection()
@@ -58,7 +70,7 @@ class JsonRpcConnectionWebSocket
 					});
 			};
 		}
-		_deferredIncomingMessages.resolve(incoming);
+		_deferredIncomingMessages.resolve(incomingMessage);
 	}
 
 #if nodejs
