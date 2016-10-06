@@ -128,7 +128,7 @@ class JsonRpcConnectionWebSocket
 		return callRequestInternal(request)
 			.then(function(response: ResponseDef) {
 				if (response.error != null) {
-					throw response.error;
+					throw Std.string(response.error);
 				}
 				return response.result;
 			});
