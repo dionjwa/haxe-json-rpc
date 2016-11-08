@@ -18,7 +18,7 @@ typedef RequestDefTyped<T> = { > JsonRpcMessage,
 typedef RequestDef = RequestDefTyped<Dynamic>;
 
 @:enum
-abstract JsonRpcErrorCode(Int) {
+abstract JsonRpcErrorCode(Int) to Int from Int {
   var ParseError = -32700;
   var InvalidRequest = -32600;
   var MethodNotFound = -32601;

@@ -1,6 +1,6 @@
 {
   "name": "haxe-jsonrpc",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "JSON remoting calls over http and websockets",
   "author": "Dion Whitehead Amago <dion@transition9.com>",
   "scripts": {

@@ -13,13 +13,18 @@ import promhx.Deferred;
 	import haxe.macro.Context;
 #end
 
-import msignal.Signal;
+#if msignal
+	import msignal.Signal;
+#end
 
 using Lambda;
 
 class Context
 {
+#if msignal
 	public var rpc (default, null):Signal1<RequestDef> = new Signal1<RequestDef>();
+#end
+
 #if nodejs
 	@:allow(js.npm.JsonRpcExpressTools)
 #end
@@ -135,7 +140,10 @@ class Context
 
 	public function handleRpcRequest(request :RequestDef) :Promise<ResponseDef>
 	{
+#if msignal
 		rpc.dispatch(request);
+#end
+
 		if (exists(request.method)) {
 			var call = _methods.get(request.method);
 			try {

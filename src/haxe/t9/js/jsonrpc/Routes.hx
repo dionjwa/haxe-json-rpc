@@ -62,8 +62,31 @@ class Routes
 				}
 			});
 
+			//Handle errors in case they are thrown which will cause a crash
+			var errorOrAborted = false;
+			req.once(ReadableEvent.Error, function(err) {
+				Log.error('Error in JSONRPC post request handler err=${Json.stringify(err)}');
+				errorOrAborted = true;
+			});
+			req.once('aborted', function() {
+				errorOrAborted = true;
+			});
+
 			req.addListener(ReadableEvent.End, function() {
+				if (errorOrAborted) {
+					return;
+				}
 				res.setHeader('Content-Type', 'application/json');
+				if (buffer == null) {
+					var responseError :ResponseDef = {
+						id: JsonRpcConstants.JSONRPC_NULL_ID,
+						error: {code:-32700, message:'Empty POST request'},
+						jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
+					};
+					res.writeHead(400);
+					res.end(stringify(responseError));
+					return;
+				}
 				var content = buffer.toString('utf8');
 				try {
 					var body :RequestDef = Json.parse(content);
@@ -94,12 +117,12 @@ class Routes
 						});
 				} catch (err :Dynamic) {
 					var responseError :ResponseDef = {
-						id :0,
+						id: JsonRpcConstants.JSONRPC_NULL_ID,
 						error: {code:-32700, message:'Invalid JSON was received by the server.\n' + err.toString(), data:content},
 						jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 					};
 					Log.error(responseError);
-					res.writeHead(500);
+					res.writeHead(400);
 					res.end(stringify(responseError));
 				}
 			});
@@ -161,12 +184,25 @@ class Routes
 				params: params
 			}
 
+			//Handle errors in case they are thrown which will cause a crash
+			var errorOrAborted = false;
+			req.once(ReadableEvent.Error, function(err) {
+				Log.error('Error in JSONRPC post request handler err=${Json.stringify(err)}');
+				errorOrAborted = true;
+			});
+			req.once('aborted', function() {
+				errorOrAborted = true;
+			});
+
 			res.setHeader("Content-Type", "application/json");
 
 			try {
 				var promise = context.handleRpcRequest(body);
 				promise
 					.then(function(rpcResponse :ResponseDef) {
+						if (errorOrAborted) {
+							return;
+						}
 						if (rpcResponse.error == null) {
 							res.writeHead(200);
 						} else {
@@ -179,8 +215,11 @@ class Routes
 						res.end(stringify(rpcResponse));
 					})
 					.catchError(function(err) {
+						if (errorOrAborted) {
+							return;
+						}
 						var responseError :ResponseDef = {
-							id :body.id,
+							id: body.id,
 							error: {code:-32700, message:err},
 							jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 						};
@@ -188,12 +227,15 @@ class Routes
 						res.end(stringify(responseError));
 					});
 			} catch (e :Dynamic) {
+				if (errorOrAborted) {
+					return;
+				}
 				var responseError :ResponseDef = {
-					id :body.id,
+					id: body.id,
 					error: {code:-32700, message:'Invalid JSON was received by the server.', data:e},
 					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 				};
-				res.writeHead(500);
+				res.writeHead(400);
 				res.end(stringify(responseError));
 			}
 		}
