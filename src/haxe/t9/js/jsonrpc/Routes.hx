@@ -98,11 +98,14 @@ class Routes
 							if (rpcResponse.error == null) {
 								res.writeHead(200);
 							} else {
-								if (rpcResponse.error.code == 0 || rpcResponse.error.code == null) {
-									res.writeHead(200);
+								if (rpcResponse.error.httpStatusCode != null) {
+									res.writeHead(rpcResponse.error.httpStatusCode);
 								} else {
-									Log.error(rpcResponse);
-									res.writeHead(500);
+									if (rpcResponse.error.code == 0 || rpcResponse.error.code == null) {
+										res.writeHead(200);
+									} else {
+										res.writeHead(500);
+									}
 								}
 							}
 							res.end(stringify(rpcResponse));
@@ -211,10 +214,14 @@ class Routes
 						if (rpcResponse.error == null) {
 							res.writeHead(200);
 						} else {
-							if (rpcResponse.error.code == 0 || rpcResponse.error.code == null) {
-								res.writeHead(200);
+							if (rpcResponse.error.httpStatusCode != null) {
+								res.writeHead(rpcResponse.error.httpStatusCode);
 							} else {
-								res.writeHead(500);
+								if (rpcResponse.error.code == 0 || rpcResponse.error.code == null) {
+									res.writeHead(200);
+								} else {
+									res.writeHead(500);
+								}
 							}
 						}
 						res.end(stringify(rpcResponse));

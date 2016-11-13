@@ -32,6 +32,7 @@ typedef ResponseError = {
 	var code :Int;
 	var message :String;
 	@:optional var data :Dynamic;
+	@:optional var httpStatusCode :Int;
 }
 
 typedef ResponseDef = { > JsonRpcMessage,
