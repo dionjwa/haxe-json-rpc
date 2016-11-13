@@ -42,7 +42,7 @@ class Routes
 		}
 	}
 
-	public static function generatePostRequestHandler (context :Context)
+	public static function generatePostRequestHandler (context :Context, ?timeout :Int = 120000)
 	{
 		return function(req :IncomingMessage, res :ServerResponse, next :?Dynamic->Void) :Void {
 			if (req.method != 'POST' || req.headers[untyped 'content-type'] != 'application/json-rpc') {
@@ -51,6 +51,8 @@ class Routes
 				}
 				return;
 			}
+
+			res.setTimeout(timeout);
 
 			//Get the POST data
 			var buffer :Buffer = null;
@@ -135,7 +137,7 @@ class Routes
 	 * @param  context :Context      [description]
 	 * @return         [description]
 	 */
-	public static function generateGetRequestHandler (context :Context, ?pathPrefix :String)
+	public static function generateGetRequestHandler (context :Context, ?pathPrefix :String, ?timeout :Int = 120000)
 	{
 		return function(req :IncomingMessage, res :ServerResponse, next :?Dynamic->Void) :Void {
 			if (req.method != 'GET') {
@@ -144,6 +146,9 @@ class Routes
 				}
 				return;
 			}
+
+			res.setTimeout(timeout);
+
 			var parts = Url.parse(req.url, true);//Parse the querystring as an object also
 			var path = parts.pathname;
 			if (path == null) {
