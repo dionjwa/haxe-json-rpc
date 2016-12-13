@@ -52,46 +52,15 @@ class Routes
 				return;
 			}
 
-			res.setTimeout(timeout);
-
-			//Get the POST data
-			var buffer :Buffer = null;
-			req.addListener(ReadableEvent.Data, function(chunk) {
-				if (buffer == null) {
-					buffer = chunk;
-				} else {
-					buffer = Buffer.concat([buffer, chunk]);
-				}
-			});
-
-			//Handle errors in case they are thrown which will cause a crash
-			var errorOrAborted = false;
-			req.once(ReadableEvent.Error, function(err) {
-				Log.error('Error in JSONRPC post request handler err=${Json.stringify(err)}');
-				errorOrAborted = true;
-			});
-			req.once('aborted', function() {
-				errorOrAborted = true;
-			});
-
-			req.addListener(ReadableEvent.End, function() {
-				if (errorOrAborted) {
-					return;
-				}
-				res.setHeader('Content-Type', 'application/json');
-				if (buffer == null) {
-					var responseError :ResponseDef = {
-						id: JsonRpcConstants.JSONRPC_NULL_ID,
-						error: {code:-32700, message:'Empty POST request'},
-						jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
-					};
-					res.writeHead(400);
-					res.end(stringify(responseError));
-					return;
-				}
-				var content = buffer.toString('utf8');
+			function doContextHandler(content :String) {
 				try {
 					var body :RequestDef = Json.parse(content);
+					if (!context.exists(body.method)) {
+						next();
+						return;
+					}
+					res.setTimeout(timeout);
+					res.setHeader('Content-Type', 'application/json');
 					var promise = context.handleRpcRequest(body);
 					promise
 						.then(function(rpcResponse :ResponseDef) {
@@ -130,7 +99,52 @@ class Routes
 					res.writeHead(400);
 					res.end(stringify(responseError));
 				}
-			});
+			}
+
+			//The body may have already been parsed
+			if (Reflect.field(req, "body") != null) {
+				doContextHandler(Reflect.field(req, "body"));
+			} else {
+				//Get the POST data
+				var buffer :Buffer = null;
+				req.addListener(ReadableEvent.Data, function(chunk) {
+					if (buffer == null) {
+						buffer = chunk;
+					} else {
+						buffer = Buffer.concat([buffer, chunk]);
+					}
+				});
+
+				//Handle errors in case they are thrown which will cause a crash
+				var errorOrAborted = false;
+				req.once(ReadableEvent.Error, function(err) {
+					Log.error('Error in JSONRPC post request handler err=${Json.stringify(err)}');
+					errorOrAborted = true;
+				});
+				req.once('aborted', function() {
+					errorOrAborted = true;
+				});
+
+				req.addListener(ReadableEvent.End, function() {
+					if (errorOrAborted) {
+						return;
+					}
+					if (buffer == null) {
+						var responseError :ResponseDef = {
+							id: JsonRpcConstants.JSONRPC_NULL_ID,
+							error: {code:-32700, message:'Empty POST request'},
+							jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
+						};
+						res.setHeader('Content-Type', 'application/json');
+						res.writeHead(400);
+						res.end(stringify(responseError));
+						return;
+					}
+					var content = buffer.toString('utf8');
+					Reflect.setField(req, 'body', content);
+					doContextHandler(content);
+				});
+			}
 		}
 	}
 
