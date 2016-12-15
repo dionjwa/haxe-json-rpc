@@ -28,6 +28,7 @@ typedef RemoteMethodDefinition = {
 	@:optional var doc :String;
 	@:optional var docCustom :String;
 	@:optional var alias :String;
+	@:optional var express :String;
 	var args :Array<RemoteMethodArgument>;
 	var isStatic :Bool;
 }

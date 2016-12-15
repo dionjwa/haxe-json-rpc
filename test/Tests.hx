@@ -11,6 +11,7 @@ class Tests
 			.add(new jsonrpc.RpcHttpGetTest())
 			.add(new jsonrpc.RpcProxyTest())
 			.add(new jsonrpc.RpcWebSocketTest())
+			.add(new jsonrpc.TestExpressRoutes())
 			.add(new jsonrpc.cli.TestCLI())
 
 			.run();

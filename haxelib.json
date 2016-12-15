@@ -5,8 +5,8 @@
   "tags": ["json", "json-rpc", "jsonrpc", "websockets", "js", "javascript", "remoting"],
   "classPath": "src/haxe",
   "description": "JSON remoting calls over http and websockets",
-  "version": "1.3.10",
-  "releasenote": "Small improvements in buffers.",
+  "version": "1.4.0",
+  "releasenote": "Express routes",
   "contributors": ["dionjwa"],
   "dependencies": {
     "promhx": "1.1.0",

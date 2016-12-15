@@ -5,10 +5,10 @@
 -D include_server_logic
 -D PromhxExposeErrors
 
--lib hxnodejs
--lib logshim
--lib promhx
--lib promhx-unit-test:2.1.2
+-lib hxnodejs:4.0.9
+-lib logshim:0.0.3
+-lib promhx:1.1.0
+-lib promhx-unit-test:2.1.3
 -lib msignal:1.2.4
 
 -cp lib/hxnodelibs
