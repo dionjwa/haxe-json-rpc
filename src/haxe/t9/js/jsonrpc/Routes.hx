@@ -5,6 +5,7 @@ import haxe.Json;
 import haxe.remoting.JsonRpc;
 
 import t9.remoting.jsonrpc.Context;
+import js.npm.JsonRpcExpressTools;
 
 #if nodejs
 	import js.Node;
@@ -19,6 +20,43 @@ using StringTools;
 
 class Routes
 {
+	public static function createMethodAndParamsFromExpressUrl(req :IncomingMessage) :{method :String, params:Dynamic}
+	{
+		if (untyped req.route == null) {
+			//Not an express app
+			return null;
+		}
+		var params :DynamicAccess<Dynamic> = {};
+		var originalUrl :String = untyped req.originalUrl;
+		var reqParams :DynamicAccess<Dynamic> = untyped req.params;
+		if (reqParams != null) {
+			for (key in reqParams.keys()) {
+				params.set(key, Json.parse(reqParams.get(key)));
+			}
+		}
+		var path :String = untyped req.route.path;
+		for (key in params.keys()) {
+			path = path.replace(':${key}', '');
+		}
+		path = path.replace('//', '/');
+		if (path.endsWith('/')) {
+			path = path.substr(0, path.length - 1);
+		}
+		if (untyped req.query != null) {
+			var query :DynamicAccess<Dynamic> = untyped req.query;
+			for (key in query.keys()) {
+				for (key in reqParams.keys()) {
+					params.set(key, Json.parse(query.get(key)));
+				}
+			}
+		}
+		return {
+			method: path,
+			params: params
+		};
+
+	}
+
 	public static function generateJsonRpcRequestHandler (context :Context)
 	{
 		return function handleRequest (message :String, sender :ResponseDef->Void) {
@@ -52,58 +90,15 @@ class Routes
 				return;
 			}
 
-			function doContextHandler(content :String) {
-				try {
-					var body :RequestDef = Json.parse(content);
-					if (!context.exists(body.method)) {
-						next();
-						return;
-					}
-					res.setTimeout(timeout);
-					res.setHeader('Content-Type', 'application/json');
-					var promise = context.handleRpcRequest(body);
-					promise
-						.then(function(rpcResponse :ResponseDef) {
-							if (rpcResponse.error == null) {
-								res.writeHead(200);
-							} else {
-								if (rpcResponse.error.httpStatusCode != null) {
-									res.writeHead(rpcResponse.error.httpStatusCode);
-								} else {
-									if (rpcResponse.error.code == 0 || rpcResponse.error.code == null) {
-										res.writeHead(200);
-									} else {
-										res.writeHead(500);
-									}
-								}
-							}
-							res.end(stringify(rpcResponse));
-						})
-						.catchError(function(err) {
-							var responseError :ResponseDef = {
-								id :body.id,
-								error: {code:-32700, message:err.toString(), data:body},
-								jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
-							};
-							Log.error(responseError);
-							res.writeHead(500);
-							res.end(stringify(responseError));
-						});
-				} catch (err :Dynamic) {
-					var responseError :ResponseDef = {
-						id: JsonRpcConstants.JSONRPC_NULL_ID,
-						error: {code:-32700, message:'Invalid JSON was received by the server.\n' + err.toString(), data:content},
-						jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
-					};
-					Log.error(responseError);
-					res.writeHead(400);
-					res.end(stringify(responseError));
-				}
-			}
-
 			//The body may have already been parsed
-			if (Reflect.field(req, "body") != null) {
-				doContextHandler(Reflect.field(req, "body"));
+			var requestBody :Dynamic = Reflect.field(req, "body");
+			if (requestBody != null) {
+				if (untyped __typeof__(requestBody) == 'string') {
+					var body :RequestDef = Json.parse(requestBody);
+					JsonRpcExpressTools.callExpressRequest(context, body, cast res, next, timeout);
+				} else {
+					JsonRpcExpressTools.callExpressRequest(context, requestBody, cast res, next, timeout);
+				}
 			} else {
 				//Get the POST data
 				var buffer :Buffer = null;
@@ -142,7 +137,19 @@ class Routes
 					}
 					var content = buffer.toString('utf8');
 					Reflect.setField(req, 'body', content);
-					doContextHandler(content);
+					try {
+						var body :RequestDef = Json.parse(content);
+						JsonRpcExpressTools.callExpressRequest(context, body, cast res, next, timeout);
+					} catch (err :Dynamic) {
+						var responseError :ResponseDef = {
+							id: JsonRpcConstants.JSONRPC_NULL_ID,
+							error: {code:-32700, message:'Invalid JSON was received by the server.\n' + err.toString(), data:content},
+							jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
+						};
+						Log.error(responseError);
+						res.writeHead(400);
+						res.end(stringify(responseError));
+					}
 				});
 			}
 		}

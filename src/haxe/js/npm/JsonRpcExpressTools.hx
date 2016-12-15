@@ -1,14 +1,12 @@
 package js.npm;
 
 import haxe.Json;
+import haxe.DynamicAccess;
 import haxe.remoting.JsonRpc;
+import t9.remoting.jsonrpc.*;
 
-import js.npm.Express;
-import js.npm.express.Request;
-import js.npm.express.Response;
-import js.npm.express.Middleware;
-import js.npm.express.BodyParser;
-import js.support.Callback;
+import js.node.http.*;
+import js.node.express.*;
 
 import promhx.Promise;
 
@@ -20,6 +18,87 @@ typedef RpcFunction=Dynamic->Promise<Dynamic>;
 
 class JsonRpcExpressTools
 {
+	public static function callExpressRequest(context :Context, jsonRpcReq :RequestDef, res :ExpressResponse, next :?Dynamic->Void, ?timeout :Int = 120000) :Void
+	{
+		if (!context.exists(jsonRpcReq.method)) {
+			next();
+			return;
+		}
+		res.setTimeout(timeout);
+		res.setHeader('Content-Type', 'application/json');
+		context.handleRpcRequest(jsonRpcReq)
+			.then(function(rpcResponse :ResponseDef) {
+				if (rpcResponse.error == null) {
+					res.writeHead(200);
+				} else {
+					if (rpcResponse.error.httpStatusCode != null) {
+						res.writeHead(rpcResponse.error.httpStatusCode);
+					} else {
+						if (rpcResponse.error.code == 0 || rpcResponse.error.code == null) {
+							res.writeHead(200);
+						} else {
+							res.writeHead(500);
+						}
+					}
+				}
+				res.end(stringify(rpcResponse));
+			})
+			.catchError(function(err) {
+				var responseError :ResponseDef = {
+					id :jsonRpcReq.id,
+					error: {code:-32700, message:err.toString(), data:jsonRpcReq},
+					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
+				};
+				Log.error(responseError);
+				res.writeHead(500);
+				res.end(stringify(responseError));
+			});
+	}
+
+	public static function addExpressRoutes(app :Dynamic, context :Context)
+	{
+		function addMethodToRouter(method :RemoteMethodDefinition) {
+			var url = method.express;
+			app.get(url, function(req :ExpressRequest, res :ExpressResponse, next :?Dynamic->Void) {
+				//Get all possible parameters
+				var params :DynamicAccess<Dynamic> = {};
+				if (req.params != null) {
+					for (key in Reflect.fields(req.params)) {
+						try {
+							params[key] = Json.parse(Reflect.field(req.params, key));
+						} catch(err :Dynamic) {
+							params[key] = Reflect.field(req.params, key);
+						}
+					}
+				}
+				if (req.query != null) {
+					for (key in Reflect.fields(req.query)) {
+						try {
+							params[key] = Json.parse(Reflect.field(req.query, key));
+						} catch(err :Dynamic) {
+							params[key] = Reflect.field(req.query, key);
+						}
+					}
+				}
+
+				var jsonRpcRequest :RequestDef = {
+					method: method.method,
+					params: params,
+					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2,
+					id: JsonRpcConstants.JSONRPC_NULL_ID
+				};
+
+				callExpressRequest(context, jsonRpcRequest, res, next);
+			});
+		}
+
+		for (method in context.methodDefinitions()) {
+			if (method.express != null) {
+				addMethodToRouter(method);
+			}
+		}
+	}
+
 	public static function createRpcRouter(context :Context) //:Request->Response->(Void->Void)->Void
 	{
 		return rpc(context._methods);
@@ -27,18 +106,18 @@ class JsonRpcExpressTools
 
 	// RPC end point. By the time you call this, you're sure
 	// its a JsonRpc call. I.e. there is no next() called
-	public static function rpc(methods :Map<String, RpcFunction>) :Request->Response->Void
+	public static function rpc(methods :Map<String, RpcFunction>) :ExpressRequest->ExpressResponse->Void
 	{
-		return function(req :Request, res :Response) {
+		return function(req, res) {
 			rpcInternal(req, res, methods);
 		};
 	}
 
-	static function rpcInternal(req :Request, res :Response, methods :Map<String, RpcFunction>) :Void
+	static function rpcInternal(req :ExpressRequest, res :ExpressResponse, methods :Map<String, RpcFunction>) :Void
 	{
 		res.setHeader('Content-Type', 'application/json');
 		var data :RequestDef;
-		var body :String = js.npm.express.BodyParser.body(req);
+		var body :String = js.npm.bodyparser.BodyParser.body(cast req);
 		try {
 			data = Json.parse(body);
 		} catch (err :Dynamic) {
@@ -110,5 +189,10 @@ class JsonRpcExpressTools
 				data: e
 			}, 500);
 		}
+	}
+
+	inline static function stringify(obj :Dynamic) :String
+	{
+		return Json.stringify(obj, null, '  ');
 	}
 }

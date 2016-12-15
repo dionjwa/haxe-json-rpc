@@ -90,7 +90,7 @@ class Macros
 
 			for (field in fields) {
 				if (field.meta.has(META_KEY_RPC)) {
-					var definition :RemoteMethodDefinition = {'method':'$className.${field.name}', field:field.name, args:[], alias:null, docCustom:null, isStatic:statics.exists(field)};
+					var definition :RemoteMethodDefinition = {'method':'$className.${field.name}', field:field.name, args:[], alias:null, docCustom:null, express:null, isStatic:statics.exists(field)};
 					remoteDefinitions.push(definition);
 					var functionArgs;
 					switch(TypeTools.follow(field.type)) {
@@ -115,6 +115,11 @@ class Macros
 													switch(metaObjectField.expr.expr) {
 														case EConst(CString(s)):definition.alias = s;
 														default: Context.error('$className.${field.name}: rpc metadata ' + "'alias' field must be a String.", pos);
+													}
+												} else if (metaObjectField.field == 'express') {
+													switch(metaObjectField.expr.expr) {
+														case EConst(CString(s)):definition.express = s;
+														default: Context.error('$className.${field.name}: rpc metadata ' + "'express' field must be a String.", pos);
 													}
 												} else if (metaObjectField.field == 'argumentDocs') {
 													switch(metaObjectField.expr.expr) {
