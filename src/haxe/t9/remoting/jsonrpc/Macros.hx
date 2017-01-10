@@ -244,6 +244,7 @@ class Macros
 	static function buildRpcClientClass(classExpr: Expr, ?include_server_logic :Bool = false) :TypePath
 	{
 		var pos = Context.currentPos();
+		trace('include_server_logic=$include_server_logic');
 
 		var className = getClassNameFromClassExpr(classExpr);
 		if (className == null || className == "") {
@@ -345,6 +346,16 @@ class Macros
 			{
 				_conn = conn;
 				return this;
+			}
+
+			public function setUrl(url :String)
+			{
+				return setConnection(t9.remoting.jsonrpc.JsonRpcConnectionHttpPost.urlConnect(url));
+			}
+
+			public function setWebsocketUrl(url :String)
+			{
+				return setConnection(t9.remoting.jsonrpc.JsonRpcConnectionWebSocket.urlConnect(url));
 			}
 
 			public function addToAllParams(key :String, val :Dynamic)

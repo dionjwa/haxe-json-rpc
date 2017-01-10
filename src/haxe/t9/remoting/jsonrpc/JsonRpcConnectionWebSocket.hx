@@ -81,34 +81,33 @@ class JsonRpcConnectionWebSocket
 	{
 #if nodejs
 		if (flags != null && flags.binary) {
-			Log.warn('Cannot handle binary websocket data, ignoring message');
+			trace('Cannot handle binary websocket data=${data} flags=${flags}, ignoring message');
 			return;
 		}
 #end
 		try {
 			var json :Dynamic = Json.parse(data);
 			if (json.jsonrpc != JsonRpcConstants.JSONRPC_VERSION_2) {
-				Log.error('Not json-rpc type:"$data"');
+				trace('Not json-rpc type:"${data}"');
 				return;
 			}
 			if (json.method != null && (json.error == null && json.result == null)) {
 				handleIncomingMessage(json);
-				// Log.error('Cannot yet handle server sending json-rpc requests:"$data"');
 				return;
 			}
 			if (json.id == null) {
-				Log.error('id is null in json-rpc response:"$data"');
+				trace('id is null in json-rpc response:"${data}"');
 				return;
 			}
 			var promiseData = _promises[json.id];
 			if (promiseData == null) {
-				Log.error('No promise mapped to:"$data"');
+				trace('No promise mapped to:"${data}"');
 				return;
 			}
 			_promises.remove(json.id);
 			promiseData.deferred.resolve(json);
 		} catch (err :Dynamic) {
-			Log.error('Failed to Json.parse:"$data"');
+			trace('Failed to Json.parse:"${data}"');
 		}
 	}
 

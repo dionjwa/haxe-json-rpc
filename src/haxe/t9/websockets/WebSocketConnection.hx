@@ -230,8 +230,7 @@ class WebSocketConnection
 					_onmessage[i](event);
 #end
 				} catch (e :Dynamic) {
-					trace(e);
-					Log.error(e);
+					trace('Error processing event=${haxe.Json.stringify(event)} error=${e}');
 				}
 				i++;
 			} else {
@@ -269,13 +268,11 @@ class WebSocketConnection
 				var reconnectInterval = 0;
 				switch(_reconnectType) {
 					case None:
-						Log.warn("No reconnects because ReconnectType==None");
+						trace("No reconnects because ReconnectType==None");
 					case Repeat(intervalMilliseconds):
-						// Log.debug("reconnecting");
 						reconnectInterval = intervalMilliseconds;
 					case Decay(intervalMilliseconds, intervalMultipler):
 						reconnectInterval = Std.int(intervalMilliseconds * (intervalMultipler * (_reconnectAttempts + 1)));
-						// Log.debug("reconnecting");
 				}
 				if (reconnectInterval > 0) {
 					haxe.Timer.delay(
@@ -300,9 +297,6 @@ class WebSocketConnection
 		_keepAliveTimer = new Timer(_keepAliveMilliseconds);
 		_keepAliveTimer.run = function() {
 			if (_socket != null && _socket.readyState == 1) {
-#if debug
-				// Log.info("sending ping");
-#end
 				#if nodejs
 					_socket.ping("keep_alive");
 				#else
