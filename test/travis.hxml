@@ -6,7 +6,7 @@
 -D PromhxExposeErrors
 
 -lib hxnodejs:4.0.9
--lib logshim:0.0.3
+-lib logshim:0.0.4
 -lib promhx:1.1.0
 -lib promhx-unit-test:2.1.3
 -lib msignal:1.2.4
