@@ -244,7 +244,6 @@ class Macros
 	static function buildRpcClientClass(classExpr: Expr, ?include_server_logic :Bool = false) :TypePath
 	{
 		var pos = Context.currentPos();
-		trace('include_server_logic=$include_server_logic');
 
 		var className = getClassNameFromClassExpr(classExpr);
 		if (className == null || className == "") {
