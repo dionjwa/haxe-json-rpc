@@ -56,7 +56,7 @@ class BasicsTest extends PromiseTest
 					}
 				});
 			})
-#if js
+#if promise == "js.npm.bluebird.Bluebird"
 			.error(function(err) {
 #else
 			.catchError(function(err) {

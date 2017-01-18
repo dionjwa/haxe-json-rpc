@@ -3,7 +3,6 @@ package t9.remoting.jsonrpc;
 import haxe.remoting.JsonRpc;
 import haxe.Json;
 
-// import promhx.Promise;
 import promhx.Deferred;
 import promhx.Stream;
 
@@ -145,7 +144,7 @@ class JsonRpcConnectionWebSocket
 
 	function callRequestInternal(request :RequestDef) :Promise<ResponseDef>
 	{
-#if js
+#if (promise == "js.npm.bluebird.Bluebird")
 		var internalResolve = null;
 		var val = null;
 		var resolver = function(v) {
@@ -189,7 +188,7 @@ class JsonRpcConnectionWebSocket
 
 	function callNotifyInternal(request :RequestDef) :Promise<Bool>
 	{
-#if js
+#if (promise == "js.npm.bluebird.Bluebird")
 		return new Promise(function(resolve, reject) {
 			var requestString = Json.stringify(request);
 			getConnection()

@@ -8,12 +8,6 @@ import js.node.stream.Readable;
 import haxe.remoting.JsonRpc;
 import haxe.Json;
 
-#if !js
-	import promhx.deferred.DeferredPromise;
-#end
-
-
-
 using StringTools;
 
 class JsonRpcConnectionHttpGet
@@ -61,8 +55,8 @@ class JsonRpcConnectionHttpGet
 
 	function callInternal(request :RequestDef) :Promise<ResponseDef>
 	{
-#if nodejs
-		return new Promise(function(resolve :ResponseDef->Void, reject :Dynamic->Void) {
+#if js
+		var execute = function(resolve, reject) {
 			// An object of options to indicate where to post to
 			var urlObj = js.node.Url.parse(_url);
 			var requestOptions :HttpRequestOptions = {
@@ -90,15 +84,16 @@ class JsonRpcConnectionHttpGet
 					}
 					if (request.id != null) {
 						try {
-							var jsonRes = Json.parse(responseData);
+							var jsonRes :ResponseDef = Json.parse(responseData);
 							resolve(jsonRes);
 							isReturned = true;
 						} catch(err :Dynamic) {
-							resolve({
+							var responseDef :ResponseDef = {
 								id :request.id,
 								error: {code:-32603, message:'Invalid JSON was received by the client.', data:responseData},
 								jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
-							});
+							};
+							resolve(responseDef);
 							isReturned = true;
 						}
 					} else {
@@ -115,9 +110,17 @@ class JsonRpcConnectionHttpGet
 			});
 
 			getReq.end();
-		});
+		}
+
+	#if promise == "js.npm.bluebird.Bluebird"
+		return new Promise(execute);
+	#else
+		var promise = new promhx.deferred.DeferredPromise();
+		execute(promise.resolve, promise.boundPromise.reject);
+		return promise.boundPromise;
+	#end
 #else
-		var promise = new DeferredPromise<ResponseDef>();
+		var promise = new promhx.deferred.DeferredPromise<ResponseDef>();
 		var h = new haxe.Http(_url);
 		h.setHeader("content-type","application/json-rpc");
 

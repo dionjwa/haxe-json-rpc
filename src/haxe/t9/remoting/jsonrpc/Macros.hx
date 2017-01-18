@@ -284,7 +284,6 @@ class Macros
 							case FMethod(k):
 							default: throw '"@rpc" metadata on a variable ${field.name}, only allowed on methods.';
 						}
-
 						newFields.push(
 							{
 								name: field.name,
@@ -305,17 +304,19 @@ class Macros
 
 									ret: ComplexType.TPath(
 										{
-// #if js
+#if (promise == "js.npm.bluebird.Bluebird")
 											name:'Bluebird',
 											pack:['js', 'npm', 'bluebird'],
-// #else
-// 											name:'Promise',
-// 											pack:['promhx'],
-// #end
+#else
+											name:'Promise',
+											pack:['promhx'],
+#end
 											params:
 												[
-													TPType(TypeTools.toComplexType(promiseType)),
-													TPType(TPath({name:"Dynamic", pack:[]})),
+													TPType(TypeTools.toComplexType(promiseType))
+#if (promise == "js.npm.bluebird.Bluebird")
+													,TPType(TPath({name:"Dynamic", pack:[]}))
+#end
 												]
 										}),
 

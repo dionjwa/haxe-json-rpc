@@ -148,14 +148,14 @@ class WebSocketConnection
 	public function getReady() :Promise<WebSocketConnection>
 	{
 		if (_socket != null && _socket.readyState == WebSocket.OPEN) {
-#if js
-			return Promise.resolve(this);
-#else
-			return Promise.promise(this);
-#end
+	#if (promise == "js.npm.bluebird.Bluebird")
+		return Promise.resolve(this);
+	#else
+		return Promise.promise(this);
+	#end
 		} else {
 
-#if js
+	#if (promise == "js.npm.bluebird.Bluebird")
 			return new Promise(function(resolve, reject) {
 				var disposable = null;
 	            var whenReady = function() {
@@ -164,7 +164,7 @@ class WebSocketConnection
 	            }
 	            disposable = registerOnOpen(whenReady);
 			});
-#else
+	#else
 			var deferred = new Deferred();
             var promise = deferred.promise();
             var disposable = null;
@@ -174,7 +174,7 @@ class WebSocketConnection
             }
             disposable = registerOnOpen(whenReady);
             return promise;
-#end
+	#end
         }
 	}
 #end

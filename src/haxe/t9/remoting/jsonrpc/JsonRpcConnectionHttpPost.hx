@@ -9,10 +9,6 @@ package t9.remoting.jsonrpc;
 import haxe.remoting.JsonRpc;
 import haxe.Json;
 
-#if !js
-	import promhx.Deferred;
-#end
-
 class JsonRpcConnectionHttpPost
 	implements JsonRpcConnection
 {
@@ -89,9 +85,9 @@ class JsonRpcConnectionHttpPost
 			jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 		};
 		return response;
-#else
-	#if nodejs
-		return new Promise<ResponseDef>(function(resolve, reject) {
+#elseif js
+
+		var execute = function(resolve, reject) {
 			var postData = Json.stringify(request);
 			// An object of options to indicate where to post to
 			var urlObj = js.node.Url.parse(_url);
@@ -114,31 +110,38 @@ class JsonRpcConnectionHttpPost
 				res.on('end', function () {
 					if (request.id != null) {
 						try {
-							var jsonRes = Json.parse(responseData.toString('utf8'));
+							var jsonRes : ResponseDef = Json.parse(responseData.toString('utf8'));
 							resolve(jsonRes);
 						} catch(err :Dynamic) {
-							resolve({
+							var responseDef :ResponseDef = {
 								id :request.id,
 								error: {code:-32603, message:'Invalid JSON was received by the client.', data:Std.string(responseData)},
 								jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
-							});
+							};
+							resolve(responseDef);
 						}
 					} else {
 						resolve(null);
 					}
 				});
-			});
-
-			postReq.on('error', function(err) {
-				reject(err);
+				res.on('error', reject);
 			});
 
 			// post the data
 			postReq.write(postData);
 			postReq.end();
-		});
-	#else
-		var promise = new DeferredPromise();
+		}
+
+		#if (promise == "js.npm.bluebird.Bluebird")
+			return new Promise<ResponseDef>(execute);
+		#else
+			var promise = new promhx.deferred.DeferredPromise();
+			execute(promise.resolve, promise.boundPromise.reject);
+			return promise.boundPromise;
+		#end
+
+#else
+		var promise = new promhx.deferred.DeferredPromise();
 		var h = new haxe.Http(_url);
 		h.setHeader("content-type","application/json-rpc");
 
@@ -155,23 +158,24 @@ class JsonRpcConnectionHttpPost
 				var ret = Json.parse(response);
 				promise.resolve(ret);
 			} catch( err : Dynamic ) {
-				promise.resolve({
+				var responseDef :ResponseDef = {
 					id :request.id,
 					error: {code:-32603, httpStatusCode:status, message:'Invalid JSON was received by the client.', data:Std.string(response)},
 					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
-				});
+				};
+				promise.resolve(responseDef);
 			}
 		};
 		h.onError = function(err) {
-			promise.resolve({
+			var responseDef :ResponseDef = {
 				id :request.id,
-				error: {code:-32603, message:'Error on request', data:Std.string(err)},
+				error: {code:-32603, message:'Error on request', data:Std.string(err), httpStatusCode:500},
 				jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
-			});
+			};
+			promise.resolve(responseDef);
 		};
 		h.request(true);
 		return promise.boundPromise;
-	#end
 #end
 	}
 
