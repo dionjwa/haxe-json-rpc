@@ -2,9 +2,6 @@ package t9.remoting.jsonrpc;
 
 import Type in StdType;
 
-import promhx.Promise;
-import promhx.Deferred;
-
 #if macro
 import haxe.macro.Expr;
 import haxe.macro.Type;
@@ -20,6 +17,19 @@ import t9.remoting.jsonrpc.RemoteMethodDefinition;
 
 using StringTools;
 using Lambda;
+
+#if nodejs
+	// import js.npm.bluebird.Bluebird as Promise;
+	// #if macro
+	// 	typedef Promise = {
+	// 	};
+	// #else
+	// 	import js.Promise;
+	// #end
+#else
+	// import promhx.Promise;
+	import promhx.Deferred;
+#end
 
 typedef MacroContext=haxe.macro.Context;
 
@@ -271,8 +281,8 @@ class Macros
 							//args: Array<{ name : String, opt : Bool, t : Type }>
 							case TFun(args, ret):
 								//This is the type of the Promise return
-								if (ret.getParameters()[0] + '' != 'promhx.Promise') {
-									throw '@rpc method must return a promhx.Promise object';
+								if (!(ret.getParameters()[0] + '' == 'promhx.Promise' || ret.getParameters()[0] + '' == 'js.npm.bluebird.Bluebird' || ret.getParameters()[0] + '' == 'js.Promise')) {
+									throw '@rpc method must return one of the following promise types: promhx.Promise | js.npm.bluebird.Bluebird | js.Promise';
 								}
 								promiseType = ret.getParameters()[1][0];
 								functionArgs = args;
@@ -300,15 +310,22 @@ class Macros
 												};
 												return funcArg;
 											}),
+
 									ret: ComplexType.TPath(
 										{
+#if nodejs
+											name:'Promise',
+											pack:['js'],
+#else
 											name:'Promise',
 											pack:['promhx'],
+#end
 											params:
 												[
 													TPType(TypeTools.toComplexType(promiseType))
 												]
 										}),
+
 									expr :
 										Context.parse(
 											"{\n" +

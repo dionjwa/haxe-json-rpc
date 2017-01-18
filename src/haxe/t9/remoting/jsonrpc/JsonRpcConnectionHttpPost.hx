@@ -9,8 +9,7 @@ package t9.remoting.jsonrpc;
 import haxe.remoting.JsonRpc;
 import haxe.Json;
 
-#if nodejs
-	import promhx.Promise;
+#if !js
 	import promhx.Deferred;
 #end
 
@@ -92,54 +91,54 @@ class JsonRpcConnectionHttpPost
 		return response;
 #else
 	#if nodejs
-		var deferred = new Deferred<ResponseDef>();
-		var promise = deferred.promise();
-
-		var postData = Json.stringify(request);
-		// An object of options to indicate where to post to
-		var urlObj = js.node.Url.parse(_url);
-		var postOptions :HttpRequestOptions = cast {
-			hostname: urlObj.hostname,
-			port: urlObj.port,
-			path: urlObj.path,
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json-rpc',
-				'Content-Length': postData.length
-			}
-		};
-		// Set up the request
-		var postReq = js.node.Http.request(postOptions, function(res) {
-			var responseData :Buffer = new Buffer(0);
-			res.on('data', function (chunk :Buffer) {
-				responseData = Buffer.concat([responseData, chunk]);
-			});
-			res.on('end', function () {
-				if (request.id != null) {
-					try {
-						var jsonRes = Json.parse(responseData.toString('utf8'));
-						deferred.resolve(jsonRes);
-					} catch(err :Dynamic) {
-						deferred.resolve({
-							id :request.id,
-							error: {code:-32603, message:'Invalid JSON was received by the client.', data:Std.string(responseData)},
-							jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
-						});
-					}
-				} else {
-					deferred.resolve(null);
+		return new Promise<ResponseDef>(function(resolve, reject) {
+			var postData = Json.stringify(request);
+			// An object of options to indicate where to post to
+			var urlObj = js.node.Url.parse(_url);
+			var postOptions :HttpRequestOptions = cast {
+				hostname: urlObj.hostname,
+				port: urlObj.port,
+				path: urlObj.path,
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json-rpc',
+					'Content-Length': postData.length
 				}
+			};
+			// Set up the request
+			var postReq = js.node.Http.request(postOptions, function(res) {
+				var responseData :Buffer = new Buffer(0);
+				res.on('data', function (chunk :Buffer) {
+					responseData = Buffer.concat([responseData, chunk]);
+				});
+				res.on('end', function () {
+					if (request.id != null) {
+						try {
+							var jsonRes = Json.parse(responseData.toString('utf8'));
+							resolve(jsonRes);
+						} catch(err :Dynamic) {
+							resolve({
+								id :request.id,
+								error: {code:-32603, message:'Invalid JSON was received by the client.', data:Std.string(responseData)},
+								jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
+							});
+						}
+					} else {
+						resolve(null);
+					}
+				});
 			});
-		});
 
-		postReq.on('error', function(err) {
-			promise.reject(err);
-		});
+			postReq.on('error', function(err) {
+				reject(err);
+			});
 
-		// post the data
-		postReq.write(postData);
-		postReq.end();
+			// post the data
+			postReq.write(postData);
+			postReq.end();
+		});
 	#else
+		var promise = new DeferredPromise();
 		var h = new haxe.Http(_url);
 		h.setHeader("content-type","application/json-rpc");
 
@@ -154,9 +153,9 @@ class JsonRpcConnectionHttpPost
 		h.onData = function(response :String) {
 			try {
 				var ret = Json.parse(response);
-				deferred.resolve(ret);
+				promise.resolve(ret);
 			} catch( err : Dynamic ) {
-				deferred.resolve({
+				promise.resolve({
 					id :request.id,
 					error: {code:-32603, httpStatusCode:status, message:'Invalid JSON was received by the client.', data:Std.string(response)},
 					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
@@ -164,15 +163,15 @@ class JsonRpcConnectionHttpPost
 			}
 		};
 		h.onError = function(err) {
-			deferred.resolve({
+			promise.resolve({
 				id :request.id,
 				error: {code:-32603, message:'Error on request', data:Std.string(err)},
 				jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 			});
 		};
 		h.request(true);
+		return promise.boundPromise;
 	#end
-		return promise;
 #end
 	}
 

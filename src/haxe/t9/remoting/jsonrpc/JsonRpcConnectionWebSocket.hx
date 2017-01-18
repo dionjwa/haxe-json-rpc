@@ -3,7 +3,7 @@ package t9.remoting.jsonrpc;
 import haxe.remoting.JsonRpc;
 import haxe.Json;
 
-import promhx.Promise;
+// import promhx.Promise;
 import promhx.Deferred;
 import promhx.Stream;
 
@@ -105,7 +105,7 @@ class JsonRpcConnectionWebSocket
 				return;
 			}
 			_promises.remove(json.id);
-			promiseData.deferred.resolve(json);
+			promiseData.resolve(json);
 		} catch (err :Dynamic) {
 			trace('Failed to Json.parse:"${data}"');
 		}
@@ -145,10 +145,36 @@ class JsonRpcConnectionWebSocket
 
 	function callRequestInternal(request :RequestDef) :Promise<ResponseDef>
 	{
+#if js
+		var internalResolve = null;
+		var val = null;
+		var resolver = function(v) {
+			val = v;
+			if (internalResolve != null) {
+				internalResolve(v);
+			}
+		}
+		var promise = new Promise(function(resolve, reject) {
+			if (val != null) {
+				resolver(val);
+			} else {
+				internalResolve = resolve;
+			}
+		});
+
+		var requestString = Json.stringify(request);
+		getConnection()
+			.then(function(ws :WebSocketConnection) {
+				ws.send(requestString);
+			});
+
+		_promises.set(request.id, {request:request, resolve:resolver});
+		return promise;
+#else
 		var deferred = new Deferred<ResponseDef>();
 		var promise = deferred.promise();
 
-		_promises[request.id] = {request:request, deferred:deferred};
+		_promises[request.id] = {request:request, resolve:deferred.resolve};
 
 		var requestString = Json.stringify(request);
 
@@ -158,10 +184,22 @@ class JsonRpcConnectionWebSocket
 			});
 
 		return promise;
+#end
 	}
 
 	function callNotifyInternal(request :RequestDef) :Promise<Bool>
 	{
+#if js
+		return new Promise(function(resolve, reject) {
+			var requestString = Json.stringify(request);
+			getConnection()
+				.then(function(ws :WebSocketConnection) {
+					ws.send(requestString);
+					resolve(true);
+				})
+				.error(reject);
+		});
+#else
 		var deferred = new Deferred<Bool>();
 		var promise = deferred.promise();
 
@@ -174,6 +212,7 @@ class JsonRpcConnectionWebSocket
 			});
 
 		return promise;
+#end
 	}
 
 	function get_ws() :WebSocketConnection
@@ -184,6 +223,6 @@ class JsonRpcConnectionWebSocket
 	var _url :String;
 	var _idCount :Int = 0;
 	var _ws :WebSocketConnection;
-	var _promises :Map<String, {request: RequestDef, deferred:Deferred<ResponseDef>}>;
+	var _promises :Map<String, {request: RequestDef, resolve:ResponseDef->Void}>;
 	var _deferredIncomingMessages = new Deferred<IncomingObj<Dynamic>>();
 }

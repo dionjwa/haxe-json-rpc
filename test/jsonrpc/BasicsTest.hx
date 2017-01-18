@@ -56,7 +56,11 @@ class BasicsTest extends PromiseTest
 					}
 				});
 			})
+#if js
+			.error(function(err) {
+#else
 			.catchError(function(err) {
+#end
 				httpServer.close(function() {
 					promise.reject(err);
 				});

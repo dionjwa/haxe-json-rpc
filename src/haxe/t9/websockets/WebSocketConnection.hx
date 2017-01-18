@@ -6,6 +6,8 @@ package t9.websockets;
 
 import haxe.Timer;
 
+import t9.remoting.jsonrpc.Promise;
+
 #if nodejs
 	#if !macro
 		import js.Node;
@@ -16,7 +18,7 @@ import haxe.Timer;
 #end
 
 #if promhx
-import promhx.Promise;
+// import promhx.Promise;
 import promhx.Deferred;
 #end
 
@@ -146,9 +148,24 @@ class WebSocketConnection
 	public function getReady() :Promise<WebSocketConnection>
 	{
 		if (_socket != null && _socket.readyState == WebSocket.OPEN) {
+#if js
+			return Promise.resolve(this);
+#else
 			return Promise.promise(this);
+#end
 		} else {
-            var deferred = new Deferred();
+
+#if js
+			return new Promise(function(resolve, reject) {
+				var disposable = null;
+	            var whenReady = function() {
+	                disposable.dispose();
+	                resolve(this);
+	            }
+	            disposable = registerOnOpen(whenReady);
+			});
+#else
+			var deferred = new Deferred();
             var promise = deferred.promise();
             var disposable = null;
             var whenReady = function() {
@@ -157,6 +174,7 @@ class WebSocketConnection
             }
             disposable = registerOnOpen(whenReady);
             return promise;
+#end
         }
 	}
 #end

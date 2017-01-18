@@ -8,8 +8,11 @@ import js.node.stream.Readable;
 import haxe.remoting.JsonRpc;
 import haxe.Json;
 
-import promhx.Promise;
-import promhx.deferred.DeferredPromise;
+#if !js
+	import promhx.deferred.DeferredPromise;
+#end
+
+
 
 using StringTools;
 
@@ -58,57 +61,63 @@ class JsonRpcConnectionHttpGet
 
 	function callInternal(request :RequestDef) :Promise<ResponseDef>
 	{
-		var promise = new DeferredPromise<ResponseDef>();
-
 #if nodejs
-		// An object of options to indicate where to post to
-		var urlObj = js.node.Url.parse(_url);
-		var requestOptions :HttpRequestOptions = {
-			hostname: urlObj.hostname,
-			port: urlObj.port != null ? Std.parseInt(urlObj.port) : 80,
-			path: urlObj.path + (urlObj.path.endsWith('/') ? '' : '/') + request.method + (request.params != null ? '?' + Querystring.stringify(request.params) : ''),
-			method: 'GET',
-			protocol: urlObj.protocol
-		};
-		// Set up the request
-		var getReq = js.node.Http.request(requestOptions, function(res) {
-			res.setEncoding('utf8');
-			var responseData = '';
-			res.on(ReadableEvent.Data, function (chunk) {
-				responseData += chunk;
-			});
-			res.on(ReadableEvent.Error, function (err) {
-				promise.boundPromise.reject(err);
-			});
-			res.on(ReadableEvent.End, function () {
-				if (promise.boundPromise.isResolved()) {
-					return;
-				}
-				if (request.id != null) {
-					try {
-						var jsonRes = Json.parse(responseData);
-						promise.resolve(jsonRes);
-					} catch(err :Dynamic) {
-						promise.resolve({
-							id :request.id,
-							error: {code:-32603, message:'Invalid JSON was received by the client.', data:responseData},
-							jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
-						});
+		return new Promise(function(resolve :ResponseDef->Void, reject :Dynamic->Void) {
+			// An object of options to indicate where to post to
+			var urlObj = js.node.Url.parse(_url);
+			var requestOptions :HttpRequestOptions = {
+				hostname: urlObj.hostname,
+				port: urlObj.port != null ? Std.parseInt(urlObj.port) : 80,
+				path: urlObj.path + (urlObj.path.endsWith('/') ? '' : '/') + request.method + (request.params != null ? '?' + Querystring.stringify(request.params) : ''),
+				method: 'GET',
+				protocol: urlObj.protocol
+			};
+			var isReturned = false;
+			// Set up the request
+			var getReq = js.node.Http.request(requestOptions, function(res) {
+				res.setEncoding('utf8');
+				var responseData = '';
+				res.on(ReadableEvent.Data, function (chunk) {
+					responseData += chunk;
+				});
+				res.on(ReadableEvent.Error, function (err) {
+					reject(err);
+					isReturned = true;
+				});
+				res.on(ReadableEvent.End, function () {
+					if (isReturned) {
+						return;
 					}
-				} else {
-					promise.resolve(null);
+					if (request.id != null) {
+						try {
+							var jsonRes = Json.parse(responseData);
+							resolve(jsonRes);
+							isReturned = true;
+						} catch(err :Dynamic) {
+							resolve({
+								id :request.id,
+								error: {code:-32603, message:'Invalid JSON was received by the client.', data:responseData},
+								jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
+							});
+							isReturned = true;
+						}
+					} else {
+						resolve(null);
+					}
+				});
+			});
+
+			getReq.on(ReadableEvent.Error, function(err) {
+				if (!isReturned) {
+					reject(err);
+					isReturned = true;
 				}
 			});
-		});
 
-		getReq.on(ReadableEvent.Error, function(err) {
-			if (!promise.boundPromise.isResolved()) {
-				promise.boundPromise.reject(err);
-			}
+			getReq.end();
 		});
-
-		getReq.end();
 #else
+		var promise = new DeferredPromise<ResponseDef>();
 		var h = new haxe.Http(_url);
 		h.setHeader("content-type","application/json-rpc");
 
@@ -134,8 +143,8 @@ class JsonRpcConnectionHttpGet
 			});
 		};
 		h.request(true);
-#end
 		return promise.boundPromise;
+#end
 	}
 
 	var _url :String;
