@@ -382,7 +382,6 @@ class Macros
 		c.fields = c.fields.concat(newFields);
 
 		haxe.macro.Context.defineType(c);
-		var type = TypeTools.toComplexType(Context.getType(proxyClassName));
 		var typePath :TypePath = {name:proxyClassName, pack:[], params:null, sub:null};
 		return typePath;
 	}
