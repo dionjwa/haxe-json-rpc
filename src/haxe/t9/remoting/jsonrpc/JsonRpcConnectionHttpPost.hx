@@ -128,6 +128,13 @@ class JsonRpcConnectionHttpPost
 				res.on('error', reject);
 			});
 
+			postReq.on('socket', function (socket) {
+				socket.setTimeout(1000 * 60 * 60); // 1 hour
+				socket.on('timeout', function() {
+					postReq.abort();
+				});
+			});
+
 			postReq.on('error', function(err) {
 				var responseDef :ResponseDef = {
 					id :request.id,
