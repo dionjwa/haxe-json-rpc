@@ -43,7 +43,7 @@ class JsonRpcConnectionHttpPost
 					//Add the request to the error object for better error tracking
 					// Reflect.setField(response.error, 'request', requestObj);
 					// throw Json.stringify(response.error, null, '  ');
-					trace(Json.stringify(response.error));
+					// trace(Json.stringify(response.error));
 					throw Json.stringify(response.error);
 				}
 				return response.result;
@@ -128,6 +128,14 @@ class JsonRpcConnectionHttpPost
 				res.on('error', reject);
 			});
 
+			postReq.on('error', function(err) {
+				var responseDef :ResponseDef = {
+					id :request.id,
+					error: {code:-32603, message:'POST request error', data:Json.stringify(err)},
+					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
+				};
+				resolve(responseDef);
+			});
 			// post the data
 			postReq.write(postData);
 			postReq.end();

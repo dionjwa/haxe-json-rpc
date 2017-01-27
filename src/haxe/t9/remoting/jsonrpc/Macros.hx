@@ -284,6 +284,7 @@ class Macros
 							case FMethod(k):
 							default: throw '"@rpc" metadata on a variable ${field.name}, only allowed on methods.';
 						}
+
 						newFields.push(
 							{
 								name: field.name,
