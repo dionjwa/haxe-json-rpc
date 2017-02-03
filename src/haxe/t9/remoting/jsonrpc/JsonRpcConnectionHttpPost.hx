@@ -116,7 +116,7 @@ class JsonRpcConnectionHttpPost
 						} catch(err :Dynamic) {
 							var responseDef :ResponseDef = {
 								id :request.id,
-								error: {code:-32603, message:'Invalid JSON was received by the client.', data:Std.string(responseData)},
+								error: {code:-32603, message:'Invalid JSON was received by the client.', data:{response:Std.string(responseData), request:request}},
 								jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 							};
 							resolve(responseDef);
