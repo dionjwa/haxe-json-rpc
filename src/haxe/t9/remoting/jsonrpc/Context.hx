@@ -30,6 +30,7 @@ class Context
 #end
 	var _methods :Map<String, RequestDef->Promise<Dynamic>>;
 	var _methodDefinitions :Array<RemoteMethodDefinition> = [];
+	var _methodDefinitionMap :Map<String, RemoteMethodDefinition> = new Map();
 
 	public function new ()
 	{
@@ -49,6 +50,11 @@ class Context
 	public function methods() :Array<String>
 	{
 		return [for (s in _methods.keys()) s];
+	}
+
+	public function getMethodDefinition(method :String) :RemoteMethodDefinition
+	{
+		return _methodDefinitionMap.get(method);
 	}
 
 	public function methodDefinitions() :Array<RemoteMethodDefinition>
@@ -98,6 +104,10 @@ class Context
 			var serviceObjectToCall = methodDef.isStatic ? type : service;
 			bindMethod(serviceObjectToCall, methodDef);
 			_methodDefinitions.push(methodDef);
+			if (methodDef.alias != null) {
+				_methodDefinitionMap.set(methodDef.alias, methodDef);
+			}
+			_methodDefinitionMap.set(methodDef.method, methodDef);
 		}
 	}
 

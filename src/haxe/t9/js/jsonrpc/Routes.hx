@@ -7,6 +7,8 @@ import haxe.remoting.JsonRpc;
 import t9.remoting.jsonrpc.Context;
 import js.npm.JsonRpcExpressTools;
 
+import t9.util.ColorTraces.*;
+
 #if nodejs
 	import js.Node;
 	import js.node.Url;
@@ -182,6 +184,10 @@ class Routes
 				return;
 			}
 
+			if (pathPrefix != null) {
+				path = path.replace(pathPrefix, '');
+			}
+
 			//If the path is just the RPC path, return all API definitions.
 			if (pathPrefix != null && path.replace(pathPrefix, '').length == 0) {
 				res.setHeader("Content-Type", "application/json");
@@ -191,7 +197,7 @@ class Routes
 				return;
 			}
 
-			var pathTokens = path.split('/');
+			var pathTokens = path.trim().split('/').filter(function(s) return s != null && s.trim().length > 0);
 
 			var query :DynamicAccess<String> = parts.query;
 			var params :DynamicAccess<Dynamic> = {};
@@ -206,10 +212,42 @@ class Routes
 				}
 			}
 
+			var method = pathTokens.shift();
+			var methodDefinition = context.getMethodDefinition(method);
+			if (methodDefinition == null) {
+				if (next != null) {
+					next();
+					return;
+				} else {
+					var responseError :ResponseDef = {
+						id: null,
+						error: {code:-32700, message:'No RPC method: "$method"'},
+						jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
+					};
+					res.writeHead(500);
+					res.end(stringify(responseError));
+					return;
+				}
+			}
+
+			var requiredArgumentDefinitions = methodDefinition.args.filter(function(d) return !d.optional);
+			for (i in 0...requiredArgumentDefinitions.length) {
+				if (pathTokens[i] == null) {
+					break;
+				}
+				var argName = requiredArgumentDefinitions[i].name;
+				var argValueFromUrl :Dynamic = pathTokens[i];
+				try {
+					argValueFromUrl = Json.parse(argValueFromUrl);
+				} catch(e :Dynamic) {}
+
+				params[argName] = argValueFromUrl;
+			}
+
 			var body :RequestDef = {
 				jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2,
 				id: JsonRpcConstants.JSONRPC_NULL_ID,
-				method: pathTokens[pathTokens.length - 1],
+				method: method,
 				params: params
 			}
 
