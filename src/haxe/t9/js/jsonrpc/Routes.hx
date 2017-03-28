@@ -59,7 +59,7 @@ class Routes
 
 	}
 
-	public static function generateJsonRpcRequestHandler (context :Context)
+	public static function generateJsonRpcRequestHandler (context :Context) :String->(ResponseDef->Void)->Void
 	{
 		return function handleRequest (message :String, sender :ResponseDef->Void) {
 			var request :RequestDef = null;
@@ -82,7 +82,7 @@ class Routes
 		}
 	}
 
-	public static function generatePostRequestHandler (context :Context, ?timeout :Int = 120000)
+	public static function generatePostRequestHandler (context :Context, ?timeout :Int = 120000) :IncomingMessage->ServerResponse->?(Dynamic->Void)->Void
 	{
 		return function(req :IncomingMessage, res :ServerResponse, next :?Dynamic->Void) :Void {
 			if (req.method != 'POST' || req.headers[untyped 'content-type'] != 'application/json-rpc') {
