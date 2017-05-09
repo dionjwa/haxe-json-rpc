@@ -13,8 +13,8 @@ import js.node.stream.Readable;
 import js.node.stream.Writable;
 import js.node.Http;
 import js.node.http.*;
-import js.node.express.*;
 
+import js.npm.express.Express;
 import js.npm.JsonRpcExpressTools;
 
 import promhx.Promise;
@@ -37,7 +37,7 @@ class TestExpressRoutes extends PromiseTest
 		context.registerService(jsonrpc.TestService3);
 
 		var app = Express.GetApplication();
-		var router = js.node.express.Express.GetRouter();
+		var router = Express.GetRouter();
 
 		var prefix = '/prefix';
 		app.use(prefix, cast router);

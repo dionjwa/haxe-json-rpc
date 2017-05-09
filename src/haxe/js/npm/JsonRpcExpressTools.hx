@@ -6,7 +6,7 @@ import haxe.remoting.JsonRpc;
 import t9.remoting.jsonrpc.*;
 
 import js.node.http.*;
-import js.node.express.*;
+import js.npm.express.*;
 
 import promhx.Promise;
 
