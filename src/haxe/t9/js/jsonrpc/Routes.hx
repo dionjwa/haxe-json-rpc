@@ -85,7 +85,7 @@ class Routes
 	public static function generatePostRequestHandler (context :Context, ?timeout :Int = 120000)
 	{
 		return function(req :IncomingMessage, res :ServerResponse, next :?Dynamic->Void) :Void {
-			if (req.method != 'POST' || req.headers[untyped 'content-type'] != 'application/json-rpc') {
+			if (req.method != 'POST' || !(req.headers[untyped 'content-type'] == 'application/json-rpc' || req.headers[untyped 'content-type'] == 'application/json')) {
 				if (next != null) {
 					next();
 				}
