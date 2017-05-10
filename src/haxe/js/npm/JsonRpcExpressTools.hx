@@ -123,6 +123,10 @@ class JsonRpcExpressTools
 			});
 		}
 
+		app.get(function(req :ExpressRequest, res :ExpressResponse, next :?Dynamic->Void) {
+			res.json({methods:context.methodDefinitions()});
+		});
+
 		for (method in context.methodDefinitions()) {
 			addMethodToRouter(method);
 		}
