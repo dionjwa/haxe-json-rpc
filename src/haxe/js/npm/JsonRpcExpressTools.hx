@@ -7,6 +7,7 @@ import t9.remoting.jsonrpc.*;
 
 import js.node.http.*;
 import js.npm.express.*;
+import js.npm.bodyparser.BodyParser;
 
 import promhx.Promise;
 
@@ -93,6 +94,24 @@ class JsonRpcExpressTools
 					}
 				}
 
+				var jsonRpcRequest :RequestDef = {
+					method: method.method,
+					params: params,
+					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2,
+					id: JsonRpcConstants.JSONRPC_NULL_ID
+				};
+
+				callExpressRequest(context, jsonRpcRequest, res, next);
+			});
+
+			var postUrl = '/${method.alias}';
+			if (method.alias == null) {
+				postUrl = '/${method.method.replace('.', '').replace('-', '')}';
+			}
+
+			app.post(postUrl, function(req :ExpressRequest, res :ExpressResponse, next :?Dynamic->Void) {
+				//Get all possible parameters
+				var params :DynamicAccess<Dynamic> = BodyParser.body(cast req);
 				var jsonRpcRequest :RequestDef = {
 					method: method.method,
 					params: params,
