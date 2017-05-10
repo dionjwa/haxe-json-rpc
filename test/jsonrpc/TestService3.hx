@@ -18,4 +18,12 @@ class TestService3
 	{
 		return Promise.promise(value1 + "::" + value2);
 	}
+
+	@rpc({
+		alias:'expressroutetest2alias',
+	})
+	public static function expressRouteTest2(value1:String, value2:Int, ?value3:Int) :Promise<String>
+	{
+		return Promise.promise(value1 + "::" + value2 + "::" + value3);
+	}
 }

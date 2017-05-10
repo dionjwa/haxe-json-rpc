@@ -58,7 +58,19 @@ class JsonRpcExpressTools
 	public static function addExpressRoutes(app :Dynamic, context :Context)
 	{
 		function addMethodToRouter(method :RemoteMethodDefinition) {
-			var url = method.express;
+
+			var url = '/${method.alias}';
+			if (method.alias == null) {
+				url = '/${method.method.replace('.', '').replace('-', '')}';
+			}
+			if (method.args != null) {
+				for (arg in method.args) {
+					if (!arg.optional) {
+						url = '${url}/:${arg.name}';
+					}
+				}
+			}
+
 			app.get(url, function(req :ExpressRequest, res :ExpressResponse, next :?Dynamic->Void) {
 				//Get all possible parameters
 				var params :DynamicAccess<Dynamic> = {};
@@ -93,9 +105,7 @@ class JsonRpcExpressTools
 		}
 
 		for (method in context.methodDefinitions()) {
-			if (method.express != null) {
-				addMethodToRouter(method);
-			}
+			addMethodToRouter(method);
 		}
 	}
 

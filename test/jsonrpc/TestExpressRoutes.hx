@@ -28,7 +28,7 @@ class TestExpressRoutes extends PromiseTest
 
 	@Test
 	@timeout(1000000)
-	public function testExpressRoutes () :Promise<Bool>
+	public function testExpressRoutes1 () :Promise<Bool>
 	{
 		var promise = new DeferredPromise();
 
@@ -61,7 +61,7 @@ class TestExpressRoutes extends PromiseTest
 		var arg2 = 42;
 
 		httpServer.listen(port, function() {
-			var url = 'http://localhost:${port}${prefix}/foo/bar/$arg1/$arg2';
+			var url = 'http://localhost:${port}${prefix}/express-route-test/$arg1/$arg2';
 			get(url)
 				.then(function(result :String) {
 					var jsonRpcResult :ResponseDef = Json.parse(result + "");
@@ -83,75 +83,73 @@ class TestExpressRoutes extends PromiseTest
 				.then(function(_) {
 					httpServer.close(function() {});
 				});
-			// clientConnection.request(Type.getClassName(jsonrpc.TestService3) + '.foo1', {input:'inputString'})
-			// .then(function(result :String) {
-			// 	httpServer.close(function() {
-			// 		if (result == 'inputStringdone') {
-			// 			deferred.resolve(true);
-			// 		} else {
-			// 			promise.reject('Unexpected result=$result != inputStringdone');
-			// 		}
-			// 	});
-			// })
-			// .catchError(function(err) {
-				// httpServer.close(function() {
-				// 	promise.resolve(true);
-				// 	// promise.boundPromise.reject(err);
-				// });
-			// });
 		});
 
 		return promise.boundPromise;
 	}
 
-	// public function testMacroClassServiceCalling() :Promise<Bool>
-	// {
-	// 	var deferred = new Deferred();
-	// 	var promise = deferred.promise();
+	@Test
+	@timeout(1000000)
+	public function testExpressRoutes2 () :Promise<Bool>
+	{
+		var promise = new DeferredPromise();
 
-	// 	var context = new t9.remoting.jsonrpc.Context();
+		var context = new t9.remoting.jsonrpc.Context();
 
-	// 	context.registerService(jsonrpc.TestService3);
+		context.registerService(jsonrpc.TestService3);
 
-	// 	var connection = new NodeConnectionJsonRpcHttp(context);
+		var app = Express.GetApplication();
+		var router = Express.GetRouter();
 
-	// 	var httpServer = Http.createServer(function(req:IncomingMessage, res:ServerResponse) {
-	// 		connection.handleRequest(req, res);
-	// 	});
+		var prefix = '/prefix';
+		app.use(prefix, cast router);
 
-	// 	httpServer.on('error', function(err) {
-	// 		promise.reject(err);
-	// 	});
-
-	// 	var port = '8082';
-
-	// 	var clientConnection = new t9.remoting.jsonrpc.JsonRpcConnectionHttp('http://localhost:' + port);
-
-	// 	httpServer.listen(port, function() {
-	// 		clientConnection.request(Type.getClassName(jsonrpc.TestService3) + '.foo1', {input:'inputString'})
-	// 			.then(function(result :String) {
-	// 				httpServer.close(function() {
-	// 					if (result == 'inputStringdone') {
-	// 						deferred.resolve(true);
-	// 					} else {
-	// 						promise.reject('Unexpected result=$result != inputStringdone');
-	// 					}
-	// 				});
-	// 			})
-	// 			.catchError(function(err) {
-	// 				httpServer.close(function() {
-	// 					promise.reject(err);
-	// 				});
-	// 			});
-	// 	});
-
-	// 	return promise;
-	// }
-	// 
-	// 
-	
+		JsonRpcExpressTools.addExpressRoutes(router, context);
 
 
+		var httpServer = Http.createServer(cast app);
+
+		httpServer.on('error', function(err) {
+			trace(err);
+			if (promise != null) {
+				promise.boundPromise.reject(true);
+				promise = null;
+			}
+		});
+
+		var port = '8082';
+
+		var arg1 = "someStringArg";
+		var arg2 = 42;
+		var arg3 = 45;
+
+		httpServer.listen(port, function() {
+			var url = 'http://localhost:${port}${prefix}/expressroutetest2alias/$arg1/$arg2?value3=${arg3}';
+			get(url)
+				.then(function(result :String) {
+					var jsonRpcResult :ResponseDef = Json.parse(result + "");
+					assertEquals(jsonRpcResult.result, '${arg1}::${arg2}::${arg3}');
+					if (promise != null) {
+						promise.resolve(true);
+						promise = null;
+					}
+					return true;
+				})
+				.errorPipe(function(err) {
+					trace(err);
+					if (promise != null) {
+						promise.boundPromise.reject(err);
+						promise = null;
+					}
+					return Promise.promise(false);
+				})
+				.then(function(_) {
+					httpServer.close(function() {});
+				});
+		});
+
+		return promise.boundPromise;
+	}
 
 	public static function get(url :String, ?timeout :Int = 0) :Promise<String>
 	{

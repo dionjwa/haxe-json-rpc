@@ -1,6 +1,6 @@
 #! /usr/bin/env sh
 mkdir -p build
-npm install
+# npm install
 haxe -cmd "node build/test/nodejs_test.js" test/travis.hxml
 
 OUT=$?
