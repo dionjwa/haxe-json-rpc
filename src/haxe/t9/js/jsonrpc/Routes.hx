@@ -95,6 +95,7 @@ class Routes
 			//The body may have already been parsed
 			var requestBody :Dynamic = Reflect.field(req, "body");
 			if (requestBody != null && req.headers[untyped 'content-type'] == 'application/json') {
+				trace('requestBody=${requestBody}');
 				if (untyped __typeof__(requestBody) == 'string') {
 					var body :RequestDef = Json.parse(requestBody);
 					JsonRpcExpressTools.callExpressRequest(context, body, cast res, next, timeout);
