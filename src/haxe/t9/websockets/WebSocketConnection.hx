@@ -17,11 +17,6 @@ import t9.remoting.jsonrpc.Promise;
 	import js.html.WebSocket;
 #end
 
-#if promhx
-// import promhx.Promise;
-import promhx.Deferred;
-#end
-
 enum ReconnectType {
 	None;//Acts like a regular websocket. No logic for handling reconnects.
 	Repeat(intervalMilliseconds :Int);
@@ -144,18 +139,17 @@ class WebSocketConnection
 		disconnect();
 	}
 
-#if promhx
 	public function getReady() :Promise<WebSocketConnection>
 	{
 		if (_socket != null && _socket.readyState == WebSocket.OPEN) {
-	#if (promise == "js.npm.bluebird.Bluebird")
+	#if ((promise == "js.npm.bluebird.Bluebird") || (promise == "js.Promise"))
 		return Promise.resolve(this);
 	#else
 		return Promise.promise(this);
 	#end
 		} else {
 
-	#if (promise == "js.npm.bluebird.Bluebird")
+	#if ((promise == "js.npm.bluebird.Bluebird") || (promise == "js.Promise"))
 			return new Promise(function(resolve, reject) {
 				var disposable = null;
 	            var whenReady = function() {
@@ -165,7 +159,7 @@ class WebSocketConnection
 	            disposable = registerOnOpen(whenReady);
 			});
 	#else
-			var deferred = new Deferred();
+			var deferred = new promhx.Deferred();
             var promise = deferred.promise();
             var disposable = null;
             var whenReady = function() {
@@ -177,7 +171,6 @@ class WebSocketConnection
 	#end
         }
 	}
-#end
 
 	public function connect()
 	{

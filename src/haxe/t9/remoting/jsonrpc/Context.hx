@@ -6,7 +6,6 @@ import t9.remoting.jsonrpc.RemoteMethodDefinition;
 import haxe.rtti.Meta;
 
 import promhx.Promise;
-import promhx.Deferred;
 
 #if macro
 	import haxe.macro.Expr;

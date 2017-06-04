@@ -3,8 +3,12 @@ package t9.remoting.jsonrpc;
 import haxe.remoting.JsonRpc;
 import haxe.Json;
 
-import promhx.Deferred;
-import promhx.Stream;
+#if nodejs
+	import promhx.Deferred;
+	import promhx.Stream;
+#else
+	import js.Promise;
+#end
 
 import t9.websockets.WebSocketConnection;
 
@@ -21,7 +25,9 @@ class JsonRpcConnectionWebSocket
 		return new JsonRpcConnectionWebSocket(url);
 	}
 
-	public var incoming (default, null) :Stream<IncomingObj<Dynamic>>;
+// #if nodejs
+// 	public var incoming (default, null) :Stream<IncomingObj<Dynamic>>;
+// #end
 
 	public var ws (get, null):WebSocketConnection;
 
@@ -61,7 +67,7 @@ class JsonRpcConnectionWebSocket
 					});
 			};
 			incomingMessage.sendError = function(err :ResponseError) {
-				var responseErrorDef :ResponseDefError = {id:message.id, error:err, jsonrpc:JsonRpcConstants.JSONRPC_VERSION_2};
+				var responseErrorDef :ResponseDefError = {id:message.id, error:{error:err, request:message}, jsonrpc:JsonRpcConstants.JSONRPC_VERSION_2};
 				var errorString = Json.stringify(responseErrorDef);
 				getConnection()
 					.then(function(ws :WebSocketConnection) {

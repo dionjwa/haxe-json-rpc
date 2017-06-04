@@ -86,7 +86,7 @@ class JsonRpcConnectionHttpPost
 			jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 		};
 		return response;
-#elseif js
+#elseif nodejs
 
 		var execute = function(resolve, reject) {
 			var postData = Json.stringify(request);
