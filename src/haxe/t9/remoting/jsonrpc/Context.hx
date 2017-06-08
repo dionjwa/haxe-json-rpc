@@ -1,11 +1,19 @@
 package t9.remoting.jsonrpc;
 
+/**
+ * Stores a map of JSON-RPC methods, so they can be
+ * called with the JSON-RPC request object, and the
+ * JSON-RPC response returned via a promise. Does not
+ * handle any of the upstream or downstream message
+ * routing, that is for other services/objects to
+ * connect to this one (via registering their methods).
+ */
 import haxe.Json;
 import haxe.remoting.JsonRpc;
 import t9.remoting.jsonrpc.RemoteMethodDefinition;
 import haxe.rtti.Meta;
 
-import promhx.Promise;
+import t9.remoting.jsonrpc.Promise;
 
 #if macro
 	import haxe.macro.Expr;
@@ -34,6 +42,11 @@ class Context
 	public function new ()
 	{
 		_methods = new Map();
+	}
+
+	public function toString() :String
+	{
+		return Json.stringify(methodDefinitions());
 	}
 
 	public function dispose()
@@ -152,7 +165,6 @@ class Context
 #if msignal
 		rpc.dispatch(request);
 #end
-
 		if (exists(request.method)) {
 			var call = _methods.get(request.method);
 			try {
@@ -165,13 +177,21 @@ class Context
 						};
 						return responseSuccess;
 					})
+#if promhx
 					.errorPipe(function(err) {
+#else
+					.catchError(function(err) {
+#end
 						var responseError :ResponseDef = {
 							id :request.id,
 							error: {code:-32603, message:'Internal RPC error', data:{error:err, stack:haxe.CallStack.toString(haxe.CallStack.exceptionStack())}},
 							jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 						};
+#if promhx
 						return Promise.promise(responseError);
+#else
+						return Promise.resolve(responseError);
+#end
 					});
 			} catch(err :Dynamic) {
 				var responseError :ResponseDef = {
@@ -179,7 +199,12 @@ class Context
 					error: {code:-32603, message:'Method threw exception="${request.method}"', data:{error:err, stack:haxe.CallStack.toString(haxe.CallStack.exceptionStack())}},
 					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 				};
+
+#if promhx
 				return Promise.promise(responseError);
+#else
+				return Promise.resolve(responseError);
+#end
 			}
 		} else {
 			if (request.method == 'help') {
@@ -188,14 +213,22 @@ class Context
 					result: _methodDefinitions,
 					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 				};
+#if promhx
 				return Promise.promise(helpResponse);
+#else
+				return Promise.resolve(helpResponse);
+#end
 			} else {
 				var responseError :ResponseDef = {
 					id :request.id,
 					error: {code:-32601, message:'The method="${request.method}" does not exist / is not available. Available methods=[' + methods().join(',') + ']'},
 					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 				};
+#if promhx
 				return Promise.promise(responseError);
+#else
+				return Promise.resolve(responseError);
+#end
 			}
 		}
 	}

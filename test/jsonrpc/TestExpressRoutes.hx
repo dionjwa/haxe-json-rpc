@@ -37,14 +37,12 @@ class TestExpressRoutes extends PromiseTest
 
 		context.registerService(jsonrpc.TestService3);
 
-		var app = Express.GetApplication();
-		var router = Express.GetRouter();
-
 		var prefix = '/prefix';
+		var app = Express.GetApplication();
+
+		var router = Express.GetRouter();
 		app.use(prefix, cast router);
-
 		JsonRpcExpressTools.addExpressRoutes(router, context);
-
 
 		var httpServer = Http.createServer(cast app);
 
@@ -62,6 +60,7 @@ class TestExpressRoutes extends PromiseTest
 		var arg2 = 42;
 
 		httpServer.listen(port, function() {
+
 			var url = 'http://localhost:${port}${prefix}/express-route-test/$arg1/$arg2';
 			get(url)
 				.then(function(result :String) {

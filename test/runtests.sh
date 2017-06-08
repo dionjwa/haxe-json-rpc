@@ -1,7 +1,7 @@
 #! /usr/bin/env sh
 mkdir -p build
 # npm install
-haxe -cmd "node build/test/nodejs_test.js" test/travis.hxml
+haxe test/travis.hxml
 
 OUT=$?
 RED='\033[0;31m'

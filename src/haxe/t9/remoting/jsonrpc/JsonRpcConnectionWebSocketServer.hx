@@ -10,74 +10,60 @@ import haxe.Json;
 	import js.Promise;
 #end
 
-import t9.websockets.WebSocketConnection;
+import js.npm.ws.WebSocket;
 
-typedef IncomingObj<T> = {>RequestDef,
-	@:optional var sendResponse :T->Void;
-	@:optional var sendError :ResponseError->Void;
-}
-
-class JsonRpcConnectionWebSocket
+class JsonRpcConnectionWebSocketServer
 	implements JsonRpcConnection
 {
-	public static function urlConnect(url :String)
-	{
-		return new JsonRpcConnectionWebSocket(url);
-	}
+	public var context (get, null) :Context;
 
-	public var ws (get, null):WebSocketConnection;
-	public var context (get, null):Context;
-
-	public function new(url)
+	public function new(ws :WebSocket, context :Context)
 	{
-		_url = url;
 		_promises = new Map();
-		_ws = new WebSocketConnection(_url);
-		_ws.registerOnMessage(onMessage);
+		_context = context;
+		_ws = ws;
+		_ws.onmessage = onMessage;
+		_ws.onclose = function(reason :Int) {
+			this.dispose();
+			return null;
+		};
 	}
 
 	public function dispose()
 	{
 		if (_ws != null) {
+			_ws.onmessage = null;
+			_ws.onclose = null;
 			_ws.close();
 			_ws = null;
 		}
+		_promises = null;
+		_context = null;
 	}
 
 	function handleIncomingMessage(message :RequestDef)
 	{
 		_context.handleRpcRequest(message)
-			.then(function(response) {
-				if (message != null) {
-					getConnection()
-						.then(function(ws :WebSocketConnection) {
-							ws.send(Json.stringify(response));
-						})
-						.catchError(function(err) {
-							trace('Failed to get a WS connection to send response ${response} message=${message}');
-						});
+			.then(function(response :ResponseDef) {
+				if (_ws.readyState == WebSocket.OPEN) {
+					_ws.send(Json.stringify(response));
+				} else {
+					trace('Error: got JSON-RPC response, but websocket is not open response=${response} ws.readyState=${_ws.readyState}');
 				}
 			})
 			.catchError(function(err) {
-
-				ws.send(Json.stringify({jsonrpc:'2.0', id: message.id, error:{data:err}}));
+				trace('Error: got JSON-RPC err message=${message} err=${err}');
 			});
 	}
 
-#if nodejs
-	function onMessage(data :String, ?flags :{binary:Bool})
-#else
-	function onMessage(data :String)
-#end
+	function onMessage(data :Dynamic, flags :WebSocketMessageFlag)
 	{
-#if nodejs
 		if (flags != null && flags.binary) {
 			trace('Cannot handle binary websocket data=${data} flags=${flags}, ignoring message');
 			return;
 		}
-#end
 		try {
-			var json :Dynamic = Json.parse(data);
+			var json :Dynamic = Json.parse(data.data);
 			if (json.jsonrpc != JsonRpcConstants.JSONRPC_VERSION_2) {
 				trace('Not json-rpc type:"${data}"');
 				return;
@@ -98,13 +84,9 @@ class JsonRpcConnectionWebSocket
 			_promises.remove(json.id);
 			promiseData.resolve(json);
 		} catch (err :Dynamic) {
-			trace('Failed to Json.parse:"${data}"');
+			trace(err);
+			// trace('Failed to Json.parse:"${data}"');
 		}
-	}
-
-	function getConnection() :Promise<WebSocketConnection>
-	{
-		return _ws.getReady();
 	}
 
 	public function request(method :String, ?params :Dynamic) :Promise<Dynamic>
@@ -136,7 +118,7 @@ class JsonRpcConnectionWebSocket
 
 	function callRequestInternal(request :RequestDef) :Promise<ResponseDef>
 	{
-#if (promise == "js.npm.bluebird.Bluebird")
+#if ((promise == "js.npm.bluebird.Bluebird") || (promise == "js.Promise"))
 		var internalResolve = null;
 		var val = null;
 		var resolver = function(v) {
@@ -154,11 +136,7 @@ class JsonRpcConnectionWebSocket
 		});
 
 		var requestString = Json.stringify(request);
-		getConnection()
-			.then(function(ws :WebSocketConnection) {
-				ws.send(requestString);
-			});
-
+		_ws.send(requestString);
 		_promises.set(request.id, {request:request, resolve:resolver});
 		return promise;
 #else
@@ -168,11 +146,7 @@ class JsonRpcConnectionWebSocket
 		_promises[request.id] = {request:request, resolve:deferred.resolve};
 
 		var requestString = Json.stringify(request);
-
-		getConnection()
-			.then(function(ws :WebSocketConnection) {
-				ws.send(requestString);
-			});
+		_ws.send(requestString);
 
 		return promise;
 #end
@@ -180,7 +154,7 @@ class JsonRpcConnectionWebSocket
 
 	function callNotifyInternal(request :RequestDef) :Promise<Bool>
 	{
-#if (promise == "js.npm.bluebird.Bluebird")
+#if ((promise == "js.npm.bluebird.Bluebird") || (promise == "js.Promise"))
 		return new Promise(function(resolve, reject) {
 			var requestString = Json.stringify(request);
 			getConnection()
@@ -196,17 +170,14 @@ class JsonRpcConnectionWebSocket
 
 		var requestString = Json.stringify(request);
 
-		getConnection()
-			.then(function(ws :WebSocketConnection) {
-				ws.send(requestString);
-				deferred.resolve(true);
-			});
+		_ws.send(requestString);
+		deferred.resolve(true);
 
 		return promise;
 #end
 	}
 
-	function get_ws() :WebSocketConnection
+	function get_ws() :WebSocket
 	{
 		return _ws;
 	}
@@ -216,9 +187,8 @@ class JsonRpcConnectionWebSocket
 		return _context;
 	}
 
-	var _url :String;
 	var _idCount :Int = 0;
-	var _ws :WebSocketConnection;
+	var _ws :WebSocket;
 	var _promises :Map<String, {request: RequestDef, resolve:ResponseDef->Void}>;
-	var _context :Context = new Context();
+	var _context :Context;
 }

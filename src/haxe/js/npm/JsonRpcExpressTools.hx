@@ -61,7 +61,9 @@ class JsonRpcExpressTools
 		function addMethodToRouter(method :RemoteMethodDefinition) {
 
 			var url = '/${method.alias}';
-			if (method.alias == null) {
+			if (method.express != null) {
+				url = '${method.express}';
+			} else if (method.alias == null) {
 				url = '/${method.method.replace('.', '').replace('-', '')}';
 			}
 			if (method.args != null) {

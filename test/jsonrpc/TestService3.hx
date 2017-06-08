@@ -12,9 +12,9 @@ class TestService3
 
 	@rpc({
 		alias:'express-route-test',
-		express: '/foo/bar/:value1/:value2'
+		// express: '/foo/bar'
 	})
-	public static function expressRouteTest(value1:String, value2:Int) :Promise<String>
+	public static function expressRouteTest(value1 :String, value2 :Int) :Promise<String>
 	{
 		return Promise.promise(value1 + "::" + value2);
 	}

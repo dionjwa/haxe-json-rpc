@@ -308,6 +308,9 @@ class Macros
 #if (promise == "js.npm.bluebird.Bluebird")
 											name:'Bluebird',
 											pack:['js', 'npm', 'bluebird'],
+#elseif (promise == "js.Promise")
+											name:'Promise',
+											pack:['js'],
 #else
 											name:'Promise',
 											pack:['promhx'],
