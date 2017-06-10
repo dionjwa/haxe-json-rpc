@@ -3,7 +3,7 @@ package t9.remoting.jsonrpc;
 import haxe.remoting.JsonRpc;
 import haxe.Json;
 
-#if nodejs
+#if (nodejs || promhx)
 	import promhx.Deferred;
 	import promhx.Stream;
 #else
@@ -59,7 +59,6 @@ class JsonRpcConnectionWebSocket
 				}
 			})
 			.catchError(function(err) {
-
 				ws.send(Json.stringify({jsonrpc:'2.0', id: message.id, error:{data:err}}));
 			});
 	}
