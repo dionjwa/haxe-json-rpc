@@ -309,9 +309,9 @@ class WebSocketConnection
 		_keepAliveTimer.run = function() {
 			if (_socket != null && _socket.readyState == 1) {
 				#if nodejs
-					_socket.ping("keep_alive");
+					_socket.ping('{"message":"keep_alive"}');
 				#else
-					_socket.send("keep_alive");
+					_socket.send('{"message":"keep_alive"}');
 				#end
 			}
 		}
