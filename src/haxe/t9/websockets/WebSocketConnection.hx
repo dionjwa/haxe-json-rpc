@@ -30,6 +30,7 @@ enum ReconnectType {
 class WebSocketConnection
 {
 	public var url (get, null) :String;
+	public var isOpen (default, null) :Bool;
 
 	public function setKeepAliveMilliseconds(ms :Int) :WebSocketConnection
 	{
@@ -48,6 +49,7 @@ class WebSocketConnection
 	 */
 	public function new(url :String)
 	{
+		this.isOpen = false;
 		_onDispose = [];
 		_onerror = [];
 		_onopen = [];
@@ -214,6 +216,7 @@ class WebSocketConnection
 		}
 		_reconnectAttempts = 0;
 		restartTimeoutTimer();
+		isOpen = true;
 	}
 
 	function onError(event :Dynamic)
