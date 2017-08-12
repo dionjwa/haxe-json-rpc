@@ -5,6 +5,7 @@ import haxe.io.Float32Array;
 
 import js.Error;
 import js.Node;
+import js.node.http.IncomingMessage;
 import js.node.http.Server;
 import js.node.events.EventEmitter;
 
@@ -93,7 +94,7 @@ extern class WebSocket extends EventEmitter<WebSocket>
     Enumeration of events emitted by the `WebSocketServer` objects
 **/
 @:enum abstract WebSocketServerEvent<T:haxe.Constraints.Function>(Event<T>) to Event<T> {
-    var Connection : WebSocketServerEvent<WebSocket->Void> = 'connection';
+    var Connection : WebSocketServerEvent<WebSocket->IncomingMessage->Void> = 'connection';
     var Headers : WebSocketServerEvent<DynamicAccess<String>->Void> = 'headers';
     var Error : WebSocketServerEvent<Error->Void> = 'error';
 }
