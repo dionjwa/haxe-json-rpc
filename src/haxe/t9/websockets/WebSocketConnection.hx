@@ -11,7 +11,8 @@ import t9.remoting.jsonrpc.Promise;
 #if nodejs
 	#if !macro
 		import js.Node;
-		import js.npm.Ws;
+		import js.npm.ws.WebSocket;
+		import js.npm.ws.WebSocketServer;
 	#end
 #elseif js
 	import js.html.WebSocket;
@@ -85,7 +86,7 @@ class WebSocketConnection
 
 		//If the websocket is already open, call the callback on the next tick
 		haxe.Timer.delay(function() {
-			if (_socket != null && _socket.readyState == js.html.WebSocket.OPEN) {
+			if (_socket != null && _socket.readyState == WebSocket.OPEN) {
 				if (!_disposed) {
 					onOpen();
 				}
@@ -95,7 +96,7 @@ class WebSocketConnection
 	}
 
 #if nodejs
-	public function registerOnMessage(onMessage :Dynamic->?ReceiveFlags->Void) :{dispose:Void->Void}
+	public function registerOnMessage(onMessage :Dynamic->?WebSocketMessageFlag->Void) :{dispose:Void->Void}
 #else
 	public function registerOnMessage(onMessage :Dynamic->Void) :{dispose:Void->Void}
 #end
@@ -122,7 +123,7 @@ class WebSocketConnection
 	public function send(data :String)
 #end
 	{
-		if (_socket != null && _socket.readyState == 1) {
+		if (_socket != null && _socket.readyState == WebSocket.OPEN) {
 			_socket.send(data);
 		} else {
 			throw "Cannot send message, websocket not ready";
@@ -314,7 +315,7 @@ class WebSocketConnection
 		}
 		_keepAliveTimer = new Timer(_keepAliveMilliseconds);
 		_keepAliveTimer.run = function() {
-			if (_socket != null && _socket.readyState == 1) {
+			if (_socket != null && _socket.readyState == WebSocket.OPEN) {
 				#if nodejs
 					_socket.ping("keep_alive");
 				#else
@@ -339,7 +340,7 @@ class WebSocketConnection
 	var _onerror :Array<Dynamic->Void>;
 	var _onopen :Array<Void->Void>;
 #if nodejs
-    var _onmessage :Array<Dynamic->?ReceiveFlags->Void>;
+    var _onmessage :Array<Dynamic->?WebSocketMessageFlag->Void>;
 #else
 	var _onmessage :Array<Dynamic->Void>;
 #end
