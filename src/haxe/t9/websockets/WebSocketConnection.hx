@@ -145,7 +145,7 @@ class WebSocketConnection
 		disconnect();
 	}
 
-#if promhx
+// #if promhx
 	public function getReady() :Promise<WebSocketConnection>
 	{
 		if (_socket != null && _socket.readyState == WebSocket.OPEN) {
@@ -166,7 +166,7 @@ class WebSocketConnection
 	            disposable = registerOnOpen(whenReady);
 			});
 	#else
-			var deferred = new Deferred();
+			var deferred = new promhx.deferred.DeferredPromise();
             var promise = deferred.promise();
             var disposable = null;
             var whenReady = function() {
@@ -178,7 +178,7 @@ class WebSocketConnection
 	#end
         }
 	}
-#end
+// #end
 
 	public function connect()
 	{
