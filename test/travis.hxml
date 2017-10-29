@@ -10,8 +10,8 @@
 -lib promhx:1.1.0
 -lib promhx-unit-test:2.1.3
 -lib msignal:1.2.4
+-lib hxnodelibs:git:https://github.com/dionjwa/hxnodelibs.git#e5f463a
 
--cp lib/hxnodelibs
 -cp src/haxe
 -cp test
 

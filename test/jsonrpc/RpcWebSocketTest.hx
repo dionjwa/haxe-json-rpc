@@ -7,8 +7,7 @@ import haxe.unit.async.PromiseTest;
 import js.Node;
 import js.node.Http;
 import js.node.http.*;
-import js.npm.Ws;
-
+import js.npm.ws.*;
 
 import promhx.Promise;
 import promhx.Deferred;

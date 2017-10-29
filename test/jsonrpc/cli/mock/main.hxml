@@ -4,7 +4,7 @@
 -lib promhx
 -lib hxnodejs
 
--cp lib/hxnodelibs
+-lib hxnodelibs:git:https://github.com/dionjwa/hxnodelibs.git#e5f463a
 -cp src/haxe
 -cp test
 
