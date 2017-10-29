@@ -22,6 +22,18 @@ class JsonRpcConnectionHttpPost
 		_url = url;
 	}
 
+	public function addHeaders(headers :Dynamic)
+	{
+		_headers = headers;
+		return this;
+	}
+
+	public function debug()
+	{
+		_debug = true;
+		return this;
+	}
+
 #if python
 	public function request(method :String, ?params :Dynamic) :Dynamic
 #else
@@ -90,6 +102,9 @@ class JsonRpcConnectionHttpPost
 
 		var execute = function(resolve, reject) {
 			var postData = Json.stringify(request);
+			if (_debug) {
+				trace('POST DATA: ${postData}');
+			}
 			// An object of options to indicate where to post to
 			var urlObj = js.node.Url.parse(_url);
 			var postOptions :HttpRequestOptions = cast {
@@ -102,6 +117,15 @@ class JsonRpcConnectionHttpPost
 					'Content-Length': postData.length
 				}
 			};
+
+			if (_headers != null) {
+				for (f in Reflect.fields(_headers)) {
+					Reflect.setField(postOptions.headers, f, Reflect.field(_headers, f));
+				}
+			}
+			if (_debug) {
+				trace('POST OPTIONS: ${Json.stringify(postOptions)}');
+			}
 			// Set up the request
 			var postReq = js.node.Http.request(postOptions, function(res) {
 				var responseData :Buffer = new Buffer(0);
@@ -109,20 +133,32 @@ class JsonRpcConnectionHttpPost
 					responseData = Buffer.concat([responseData, chunk]);
 				});
 				res.on('end', function () {
-					if (request.id != null) {
-						try {
-							var jsonRes : ResponseDef = Json.parse(responseData.toString('utf8'));
-							resolve(jsonRes);
-						} catch(err :Dynamic) {
-							var responseDef :ResponseDef = {
-								id :request.id,
-								error: {code:-32603, message:'Invalid JSON was received by the client.', data:{response:Std.string(responseData), request:request}},
-								jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
-							};
-							resolve(responseDef);
-						}
+					if (_debug) {
+						trace('POST RESPONSE: statusCode=[${res.statusCode}] data=[${responseData.toString('utf8')}] request=[$postData]');
+					}
+					if (res.statusCode >= 400) {
+						var responseDef :ResponseDef = {
+							id :request.id,
+							error: {code:-32603, message:'Bad http statusCode', data:'statusCode=${res.statusCode}'},
+							jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
+						};
+						resolve(responseDef);
 					} else {
-						resolve(null);
+						if (request.id != null) {
+							try {
+								var jsonRes : ResponseDef = Json.parse(responseData.toString('utf8'));
+								resolve(jsonRes);
+							} catch(err :Dynamic) {
+								var responseDef :ResponseDef = {
+									id :request.id,
+									error: {code:-32603, message:'Invalid JSON was received by the client.', data:{response:Std.string(responseData), request:request}},
+									jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
+								};
+								resolve(responseDef);
+							}
+						} else {
+							resolve(null);
+						}
 					}
 				});
 				res.on('error', reject);
@@ -197,4 +233,6 @@ class JsonRpcConnectionHttpPost
 
 	var _url :String;
 	var _idCount :Int = 0;
+	var _headers :Dynamic;
+	var _debug :Bool = false;
 }
