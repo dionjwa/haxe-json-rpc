@@ -19,7 +19,7 @@ typedef RpcFunction=Dynamic->Promise<Dynamic>;
 
 class JsonRpcExpressTools
 {
-	public static function callExpressRequest(context :Context, jsonRpcReq :RequestDef, res :ExpressResponse, next :?Dynamic->Void, ?timeout :Int = 120000) :Void
+	public static function callExpressRequest(context :Context, jsonRpcReq :RequestDef, res :Response, next :?Dynamic->Void, ?timeout :Int = 120000) :Void
 	{
 		if (!context.exists(jsonRpcReq.method)) {
 			next();
@@ -72,7 +72,7 @@ class JsonRpcExpressTools
 				}
 			}
 
-			app.get(url, function(req :ExpressRequest, res :ExpressResponse, next :?Dynamic->Void) {
+			app.get(url, function(req :Request, res :Response, next :?Dynamic->Void) {
 				//Get all possible parameters
 				var params :DynamicAccess<Dynamic> = {};
 				if (req.params != null) {
@@ -109,7 +109,7 @@ class JsonRpcExpressTools
 				postUrl = '/${method.method.replace('.', '').replace('-', '')}';
 			}
 
-			app.post(postUrl, function(req :ExpressRequest, res :ExpressResponse, next :?Dynamic->Void) {
+			app.post(postUrl, function(req :Request, res :Response, next :?Dynamic->Void) {
 				//Get all possible parameters
 				var params :DynamicAccess<Dynamic> = BodyParser.body(cast req);
 				var jsonRpcRequest :RequestDef = {
@@ -123,7 +123,7 @@ class JsonRpcExpressTools
 			});
 		}
 
-		app.get(function(req :ExpressRequest, res :ExpressResponse, next :?Dynamic->Void) {
+		app.get(function(req :Request, res :Response, next :?Dynamic->Void) {
 			res.json({methods:context.methodDefinitions()});
 		});
 
@@ -139,14 +139,14 @@ class JsonRpcExpressTools
 
 	// RPC end point. By the time you call this, you're sure
 	// its a JsonRpc call. I.e. there is no next() called
-	public static function rpc(methods :Map<String, RpcFunction>) :ExpressRequest->ExpressResponse->Void
+	public static function rpc(methods :Map<String, RpcFunction>) :Request->Response->Void
 	{
 		return function(req, res) {
 			rpcInternal(req, res, methods);
 		};
 	}
 
-	static function rpcInternal(req :ExpressRequest, res :ExpressResponse, methods :Map<String, RpcFunction>) :Void
+	static function rpcInternal(req :Request, res :Response, methods :Map<String, RpcFunction>) :Void
 	{
 		res.setHeader('Content-Type', 'application/json');
 		var data :RequestDef;
