@@ -2,18 +2,11 @@ language: haxe
 
 sudo: true
 
-# Handle git submodules yourself
-git:
-    submodules: false
-
 before_install:
-  # Use sed to replace the SSH URL with the public URL, then initialize submodules
-  - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
-  - git submodule update --init --recursive
   - nvm install 5.11
   - npm install
 
 haxe:
-  - "3.3.0-rc.1"
+  - "3.4.4"
 hxml:
   - test/travis.hxml
