@@ -35,8 +35,8 @@ class JsonRpcExpressTools
 					if (rpcResponse.error.httpStatusCode != null) {
 						res.writeHead(rpcResponse.error.httpStatusCode);
 					} else {
-						if (rpcResponse.error.code == 0 || rpcResponse.error.code == null) {
-							res.writeHead(200);
+						if (rpcResponse.error.code != null && rpcResponse.error.code >= 200 && rpcResponse.error.code <= 599) {
+							res.writeHead(rpcResponse.error.code);
 						} else {
 							res.writeHead(500);
 						}

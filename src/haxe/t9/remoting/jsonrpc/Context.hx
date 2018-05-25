@@ -2,6 +2,7 @@ package t9.remoting.jsonrpc;
 
 import haxe.Json;
 import haxe.remoting.JsonRpc;
+import haxe.remoting.RpcErrorResponse;
 import t9.remoting.jsonrpc.RemoteMethodDefinition;
 import haxe.rtti.Meta;
 
@@ -167,12 +168,26 @@ class Context
 						return responseSuccess;
 					})
 					.errorPipe(function(err) {
-						var responseError :ResponseDef = {
-							id :request.id,
-							error: {code:-32603, message:'Internal RPC error', data:{error:err, stack:haxe.CallStack.toString(haxe.CallStack.exceptionStack())}},
-							jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
-						};
-						return Promise.promise(responseError);
+						try {
+							throw(err); // rethrow the error value to do standard error handling
+						} catch(e :RpcErrorResponse){
+							var responseError :ResponseDef = {
+								id :request.id,
+								error: {
+									code: e.HttpStatusCode,
+									message: e.Message
+								},
+								jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
+							};
+							return Promise.promise(responseError);
+						} catch(e :Dynamic){
+							var responseError :ResponseDef = {
+								id :request.id,
+								error: {code:-32603, message:'Internal RPC error', data:{error:err, stack:haxe.CallStack.toString(haxe.CallStack.exceptionStack())}},
+								jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
+							};
+							return Promise.promise(responseError);
+						}
 					});
 			} catch(err :Dynamic) {
 				var responseError :ResponseDef = {

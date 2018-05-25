@@ -93,7 +93,6 @@ class Routes
 			//The body may have already been parsed
 			var requestBody :Dynamic = Reflect.field(req, "body");
 			if (requestBody != null && req.headers[untyped 'content-type'] == 'application/json') {
-				trace('requestBody=${requestBody}');
 				if (untyped __typeof__(requestBody) == 'string') {
 					var body :RequestDef = Json.parse(requestBody);
 					JsonRpcExpressTools.callExpressRequest(context, body, cast res, next, timeout);
@@ -223,7 +222,8 @@ class Routes
 						error: {code:-32700, message:'No RPC method: "$method"'},
 						jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
 					};
-					res.writeHead(500);
+					//501 Not Implemented
+					res.writeHead(501);
 					res.end(stringify(responseError));
 					return;
 				}
@@ -275,8 +275,8 @@ class Routes
 							if (rpcResponse.error.httpStatusCode != null) {
 								res.writeHead(rpcResponse.error.httpStatusCode);
 							} else {
-								if (rpcResponse.error.code == 0 || rpcResponse.error.code == null) {
-									res.writeHead(200);
+								if (rpcResponse.error.code >= 200 && rpcResponse.error.code <= 599) {
+									res.writeHead(rpcResponse.error.code);
 								} else {
 									res.writeHead(500);
 								}
