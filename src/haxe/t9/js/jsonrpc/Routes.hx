@@ -73,10 +73,9 @@ class Routes
 				return;
 			}
 
-			context.handleRpcRequest(request)
-				.then(function(rpcResponse :ResponseDef) {
-					sender(rpcResponse);
-				});
+			context
+				.handleRpcRequest(request)
+				.then(sender);
 		}
 	}
 

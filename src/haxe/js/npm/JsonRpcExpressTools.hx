@@ -29,30 +29,24 @@ class JsonRpcExpressTools
 		res.setHeader('Content-Type', 'application/json');
 		context.handleRpcRequest(jsonRpcReq)
 			.then(function(rpcResponse :ResponseDef) {
-				if (rpcResponse.error == null) {
-					res.writeHead(200);
-					res.end(stringify(rpcResponse));
-				} else {
-					var rpcError = rpcResponse.error;
-					//Send to the express handler a good error object
-					//e.g. {error:'some string', httpStatus:400}
-					var errorObj = {
-						httpStatus: 500,
-						message: '',
-					};
-
-					if (rpcError.data != null && rpcError.data.error != null && rpcError.data.error.stack != null) {
-						errorObj.message = '${rpcError.data.error.stack}';
+				var status =
+					if (rpcResponse.error == null) {
+						200;
 					} else {
-						errorObj.message = Json.stringify(rpcError);
-					}
-
-					if (rpcError != null &&  rpcError.httpStatusCode != null) {
-						errorObj.httpStatus = rpcError.httpStatusCode;
-					}
-
-					next(errorObj);
-				}
+						if (rpcResponse.error.httpStatusCode != null) {
+							rpcResponse.error.httpStatusCode;
+						} else {
+							if (rpcResponse.error.code == JsonRpcErrorCode.InvalidParams) {
+								400;
+							} else if (rpcResponse.error.code >= 200 && rpcResponse.error.code <= 599) {
+								rpcResponse.error.code;
+							} else {
+								500;
+							}
+						}
+					};
+				res.writeHead(status);
+				res.end(stringify(rpcResponse));
 			})
 			.catchError(function(err) {
 				next(err);
@@ -159,7 +153,7 @@ class JsonRpcExpressTools
 		} catch (err :Dynamic) {
 			res.status(500)
 				.send(Json.stringify({
-					jsonrpc: '2.0',
+					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2,
 					error: 'Failed to parse body ${body} err=$err'
 				}));
 			return;
@@ -167,17 +161,16 @@ class JsonRpcExpressTools
 		var onError = function (err :Dynamic, ? statusCode : Int = 200) {
 			res.status(statusCode)
 				.send(Json.stringify({
-					jsonrpc: '2.0',
+					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2,
 					error: err,
 					id: data.id
 				}));
 		};
 
-		if (data.jsonrpc != '2.0') {
+		if (data.jsonrpc != JsonRpcConstants.JSONRPC_VERSION_2) {
 			onError({
 				code: -32600,
 				message: 'Bad Request. JSON RPC version is invalid or missing',
-				data: null
 			}, 400);
 			return;
 		}
@@ -195,7 +188,7 @@ class JsonRpcExpressTools
 					var jsonStringResult :String;
 					try {
 						jsonStringResult = Json.stringify({
-							jsonrpc: '2.0',
+							jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2,
 							result: result,
 							id: data.id
 						});

@@ -52,7 +52,8 @@ class JsonRpcConnectionHttpPost
 		return callInternal(requestObj)
 			.then(function(response: ResponseDef) {
 				if (response.error != null) {
-					throw Json.stringify(response.error);
+					//Rethrow
+					throw response.error;
 				}
 				return response.result;
 			});
@@ -129,21 +130,24 @@ class JsonRpcConnectionHttpPost
 					responseData = Buffer.concat([responseData, chunk]);
 				});
 				res.on('end', function () {
+					var responseString = responseData.toString('utf8');
 					if (_debug) {
-						trace('POST RESPONSE: statusCode=[${res.statusCode}] data=[${responseData.toString('utf8')}] request=[$postData]');
+						trace('POST RESPONSE: statusCode=[${res.statusCode}] data=[${responseString}] request=[$postData]');
 					}
+					var responseObj :ResponseDef = try {Json.parse(responseString);} catch(ignored :Dynamic) {null;};
+					var isResponseObj = responseObj != null && responseObj.jsonrpc == JsonRpcConstants.JSONRPC_VERSION_2;
 					if (res.statusCode >= 400) {
-						var responseDef :ResponseDef = {
-							id :request.id,
-							error: {code:-32603, message:'Bad http statusCode', data:'statusCode=${res.statusCode}'},
-							jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
-						};
-						resolve(responseDef);
+						responseObj = isResponseObj ? responseObj :
+							{
+								id :request.id,
+								error: {code:res.statusCode, message:'${responseData.toString('utf8')}'},
+								jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
+							};
+						resolve(responseObj);
 					} else {
 						if (request.id != null) {
 							try {
-								var jsonRes : ResponseDef = Json.parse(responseData.toString('utf8'));
-								resolve(jsonRes);
+								resolve(responseObj);
 							} catch(err :Dynamic) {
 								var responseDef :ResponseDef = {
 									id :request.id,

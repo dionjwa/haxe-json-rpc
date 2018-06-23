@@ -154,7 +154,6 @@ class Context
 #if msignal
 		rpc.dispatch(request);
 #end
-
 		if (exists(request.method)) {
 			var call = _methods.get(request.method);
 			try {
@@ -168,26 +167,28 @@ class Context
 						return responseSuccess;
 					})
 					.errorPipe(function(err) {
-						try {
-							throw(err); // rethrow the error value to do standard error handling
-						} catch(e :RpcErrorResponse){
-							var responseError :ResponseDef = {
-								id :request.id,
-								error: {
-									code: e.HttpStatusCode,
-									message: e.Message
-								},
-								jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
-							};
-							return Promise.promise(responseError);
-						} catch(e :Dynamic){
-							var responseError :ResponseDef = {
-								id :request.id,
-								error: {code:-32603, message:'Internal RPC error', data:{error:err, stack:haxe.CallStack.toString(haxe.CallStack.exceptionStack())}},
-								jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
-							};
-							return Promise.promise(responseError);
+						// If we get a special RpcErrorResponse type
+						// then make sure the error returned and the
+						// http status code are returned.
+						var responseError :ResponseDef = switch (Type.typeof(err)) {
+							case TClass(cls) if (cls == RpcErrorResponse):
+								var e :RpcErrorResponse = cast(err);
+								{
+									id :request.id,
+									error: {
+										code: e.HttpStatusCode,
+										message: e.Message
+									},
+									jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
+								};
+							default:
+								{
+									id :request.id,
+									error: {code:-32603, message:'Internal RPC error', data:{error:err, stack:haxe.CallStack.toString(haxe.CallStack.exceptionStack())}},
+									jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
+								};
 						}
+						return Promise.promise(responseError);
 					});
 			} catch(err :Dynamic) {
 				var responseError :ResponseDef = {
