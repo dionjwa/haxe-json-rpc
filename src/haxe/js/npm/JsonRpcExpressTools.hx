@@ -21,9 +21,7 @@ class JsonRpcExpressTools
 {
 	public static function callExpressRequest(context :Context, jsonRpcReq :RequestDef, res :ExpressResponse, next :?Dynamic->Void, ?timeout :Int = 120000) :Void
 	{
-		trace('jsonRpcReq=$jsonRpcReq');
 		if (!context.exists(jsonRpcReq.method)) {
-			trace('does NOT exist ${context.methods()}');
 			next();
 			return;
 		}

@@ -172,7 +172,6 @@ class Macros
 																					Context.error('$className.${field.name}: @rpc{"args":{"$argumentKey":{"short":"$argItemValue"}}} "$argItemValue" is too long. "short" values must be a single character.', pos);
 																				}
 																				if (!arg.optional) {
-																					trace('arg=${arg}');
 																					Context.error('$className.${field.name}: @rpc{"args":{"$argumentKey":{"short":"$argItemValue"}}} "short" options are only valid for optional arguments.', pos);
 																				}
 																				arg.short = argItemValue;
@@ -418,7 +417,6 @@ class Macros
 
 	public static function getClassNameFromClassExpr (classNameExpr :Expr) :String
 	{
-		// trace('classNameExpr=${classNameExpr}');
 		var drillIntoEField = null;
 		var className = "";
 		drillIntoEField = function (e :Expr) :String {
