@@ -105,7 +105,7 @@ class Context
 			var serviceObjectToCall = methodDef.isStatic ? type : service;
 			bindMethod(serviceObjectToCall, methodDef);
 			_methodDefinitions.push(methodDef);
-			if (methodDef.alias != null) {
+			if (methodDef.alias != null && methodDef.alias != "") {
 				_methodDefinitionMap.set(methodDef.alias, methodDef);
 			}
 			_methodDefinitionMap.set(methodDef.method, methodDef);
@@ -141,7 +141,7 @@ class Context
 		}
 		_methods.set(methodName, call);
 
-		if (methodDef.alias != null) {
+		if (methodDef.alias != null && methodDef.alias != '' && methodDef.alias != methodDef.method) {
 			if (_methods.exists(methodDef.alias)) {
 				throw 'Context.bindMethod already has a binding for ${methodDef.alias}';
 			}

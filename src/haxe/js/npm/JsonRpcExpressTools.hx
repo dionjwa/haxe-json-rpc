@@ -21,7 +21,9 @@ class JsonRpcExpressTools
 {
 	public static function callExpressRequest(context :Context, jsonRpcReq :RequestDef, res :ExpressResponse, next :?Dynamic->Void, ?timeout :Int = 120000) :Void
 	{
+		trace('jsonRpcReq=$jsonRpcReq');
 		if (!context.exists(jsonRpcReq.method)) {
+			trace('does NOT exist ${context.methods()}');
 			next();
 			return;
 		}
@@ -113,7 +115,7 @@ class JsonRpcExpressTools
 				//Get all possible parameters
 				var params :DynamicAccess<Dynamic> = BodyParser.body(cast req);
 				var jsonRpcRequest :RequestDef = {
-					method: method.method,
+					method: method.alias != null && method.alias != "" ? method.alias : method.method,
 					params: params,
 					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2,
 					id: JsonRpcConstants.JSONRPC_NULL_ID
@@ -179,15 +181,17 @@ class JsonRpcExpressTools
 			return;
 		}
 
-		if (!methods.exists(data.method)) {
+		var methodName = data.method;
+
+		if (!methods.exists(methodName)) {
 			onError({
 				code: -32601,
-				message: 'Method not found : ' + data.method + ', available methods:[' + [for (f in methods.keys()) f].join(', ') + ']'
+				message: 'Method not found : $methodName, available methods:[' + [for (f in methods.keys()) f].join(', ') + ']'
 			}, 404);
 			return;
 		}
 		try {
-			methods[data.method](data.params)
+			methods[methodName](data.params)
 				.then(function(result) {
 					var jsonStringResult :String;
 					try {

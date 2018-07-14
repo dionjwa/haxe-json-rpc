@@ -83,7 +83,9 @@ class Routes
 	public static function generatePostRequestHandler (context :Context, ?timeout :Int = 120000)
 	{
 		return function(req :IncomingMessage, res :ServerResponse, next :?Dynamic->Void) :Void {
+			trace('in routes generatePostRequestHandler');
 			if (req.method != 'POST' || !(req.headers[untyped 'content-type'] == 'application/json-rpc' || req.headers[untyped 'content-type'] == 'application/json')) {
+				trace('nope');
 				if (next != null) {
 					next();
 				}
@@ -92,6 +94,7 @@ class Routes
 
 			//The body may have already been parsed
 			var requestBody :Dynamic = Reflect.field(req, "body");
+			trace('requestBody=${requestBody}');
 			if (requestBody != null && req.headers[untyped 'content-type'] == 'application/json') {
 				if (untyped __typeof__(requestBody) == 'string') {
 					var body :RequestDef = Json.parse(requestBody);
@@ -137,6 +140,7 @@ class Routes
 					}
 					var content = buffer.toString('utf8');
 					Reflect.setField(req, 'body', content);
+					trace('content=${content}');
 					try {
 						var body :RequestDef = Json.parse(content);
 						JsonRpcExpressTools.callExpressRequest(context, body, cast res, next, timeout);

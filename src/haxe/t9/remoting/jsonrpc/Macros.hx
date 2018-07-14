@@ -114,7 +114,9 @@ class Macros
 											for (metaObjectField in expr) {
 												if (metaObjectField.field == 'alias') {
 													switch(metaObjectField.expr.expr) {
-														case EConst(CString(s)):definition.alias = s;
+														case EConst(CString(s)):
+															definition.method = s;
+															definition.alias = s;
 														default: Context.error('$className.${field.name}: rpc metadata ' + "'alias' field must be a String.", pos);
 													}
 												} else if (metaObjectField.field == 'express') {
@@ -266,6 +268,33 @@ class Macros
 				var fields = t.get().fields.get();
 				for (field in fields) {
 					if (field.meta.has(META_KEY_RPC)) {
+
+
+						var methodRpcName = '${className}.${field.name}';
+
+						var metaRpc = field.meta.extract(META_KEY_RPC).find(function(x) return x.name == META_KEY_RPC);
+						if (metaRpc.params != null) {
+							for (param in metaRpc.params) {
+								switch(param.expr) {
+									case EObjectDecl(expr):
+										for (metaObjectField in expr) {
+											if (metaObjectField.field == 'alias') {
+												switch(metaObjectField.expr.expr) {
+													case EConst(CString(s)):
+														methodRpcName = s;
+													default:
+												}
+											}
+
+										}
+									default:
+								}
+							}
+						}
+
+
+
+
 						var promiseType;
 						var functionArgs;
 						switch(TypeTools.follow(field.type)) {
@@ -326,7 +355,7 @@ class Macros
 											"{\n" +
 												"var args = {};\n" +
 												functionArgs.map(function(functionArg) return "Reflect.setField(args, '" + functionArg.name + "', " + functionArg.name + ");").join('\n') +
-												"\nreturn cast _conn.request('" + className + '.' + field.name +"', args);\n" +
+												'\nreturn cast _conn.request("${methodRpcName}", args);\n' +
 											"}"
 											, pos)
 								}),
