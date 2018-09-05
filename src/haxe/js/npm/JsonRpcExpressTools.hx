@@ -31,7 +31,7 @@ class JsonRpcExpressTools
 			.then(function(rpcResponse :ResponseDef) {
 				if (rpcResponse.error == null) {
 					res.writeHead(200);
-					res.end(stringify(rpcResponse.result));
+					res.end(stringify(rpcResponse));
 				} else {
 					var rpcError = rpcResponse.error;
 					//Send to the express handler a good error object
