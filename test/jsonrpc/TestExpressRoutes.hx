@@ -49,7 +49,6 @@ class TestExpressRoutes extends PromiseTest
 		var httpServer = Http.createServer(cast app);
 
 		httpServer.on('error', function(err) {
-			trace(err);
 			if (promise != null) {
 				promise.boundPromise.reject(true);
 				promise = null;

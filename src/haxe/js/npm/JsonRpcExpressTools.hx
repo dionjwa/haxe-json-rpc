@@ -31,28 +31,31 @@ class JsonRpcExpressTools
 			.then(function(rpcResponse :ResponseDef) {
 				if (rpcResponse.error == null) {
 					res.writeHead(200);
+					res.end(stringify(rpcResponse.result));
 				} else {
-					if (rpcResponse.error.httpStatusCode != null) {
-						res.writeHead(rpcResponse.error.httpStatusCode);
+					var rpcError = rpcResponse.error;
+					//Send to the express handler a good error object
+					//e.g. {error:'some string', httpStatus:400}
+					var errorObj = {
+						httpStatus: 500,
+						message: '',
+					};
+
+					if (rpcError.data != null && rpcError.data.error != null && rpcError.data.error.stack != null) {
+						errorObj.message = '${rpcError.data.error.stack}';
 					} else {
-						if (rpcResponse.error.code != null && rpcResponse.error.code >= 200 && rpcResponse.error.code <= 599) {
-							res.writeHead(rpcResponse.error.code);
-						} else {
-							res.writeHead(500);
-						}
+						errorObj.message = Json.stringify(rpcError);
 					}
+
+					if (rpcError != null &&  rpcError.httpStatusCode != null) {
+						errorObj.httpStatus = rpcError.httpStatusCode;
+					}
+
+					next(errorObj);
 				}
-				res.end(stringify(rpcResponse));
 			})
 			.catchError(function(err) {
-				var responseError :ResponseDef = {
-					id :jsonRpcReq.id,
-					error: {code:-32700, message:err.toString(), data:jsonRpcReq},
-					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
-				};
-				Log.error(responseError);
-				res.writeHead(500);
-				res.end(stringify(responseError));
+				next(err);
 			});
 	}
 
