@@ -7,6 +7,19 @@ package haxe.remoting;
  */
 class RpcErrorResponse
 {
+	/**
+	 * Converting from JSON removes the haxe type info
+	 * @param  val :Dynamic      [description]
+	 * @return     [description]
+	 */
+	public static function convertFromObject(val :Dynamic) :RpcErrorResponse
+	{
+		if (val != null && Reflect.hasField(val, 'HttpStatusCode') && val.HttpStatusCode >= 200) {
+			return new RpcErrorResponse(val.HttpStatusCode, val.message);
+		}
+		return null;
+	}
+
 	public var HttpStatusCode :Int;
 	public var Message :String;
 
