@@ -156,6 +156,32 @@ class Context
 #end
 		if (exists(request.method)) {
 			var call = _methods.get(request.method);
+
+			function httpStatusErrorHandler(err) {
+				trace('got handleRpcRequest errorpipe err=${err}');
+				// If we get a special RpcErrorResponse type
+				// then make sure the error returned and the
+				// http status code are returned.
+				var responseError :ResponseDef = switch (Type.typeof(err)) {
+					case TClass(cls) if (cls == RpcErrorResponse):
+						var e :RpcErrorResponse = cast(err);
+						{
+							id :request.id,
+							error: {
+								code: e.HttpStatusCode,
+								message: e.Message
+							},
+							jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
+						};
+					default:
+						{
+							id :request.id,
+							error: {code:-32603, message:'Internal RPC error', data:{error:err, stack:haxe.CallStack.toString(haxe.CallStack.exceptionStack())}},
+							jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
+						};
+				}
+				return Promise.promise(responseError);
+			}
 			try {
 				return call(request)
 					.then(function(result :Dynamic) {
@@ -166,37 +192,9 @@ class Context
 						};
 						return responseSuccess;
 					})
-					.errorPipe(function(err) {
-						// If we get a special RpcErrorResponse type
-						// then make sure the error returned and the
-						// http status code are returned.
-						var responseError :ResponseDef = switch (Type.typeof(err)) {
-							case TClass(cls) if (cls == RpcErrorResponse):
-								var e :RpcErrorResponse = cast(err);
-								{
-									id :request.id,
-									error: {
-										code: e.HttpStatusCode,
-										message: e.Message
-									},
-									jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
-								};
-							default:
-								{
-									id :request.id,
-									error: {code:-32603, message:'Internal RPC error', data:{error:err, stack:haxe.CallStack.toString(haxe.CallStack.exceptionStack())}},
-									jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
-								};
-						}
-						return Promise.promise(responseError);
-					});
+					.errorPipe(httpStatusErrorHandler);
 			} catch(err :Dynamic) {
-				var responseError :ResponseDef = {
-					id :request.id,
-					error: {code:-32603, message:'Method threw exception="${request.method}"', data:{error:err, stack:haxe.CallStack.toString(haxe.CallStack.exceptionStack())}},
-					jsonrpc: JsonRpcConstants.JSONRPC_VERSION_2
-				};
-				return Promise.promise(responseError);
+				return httpStatusErrorHandler(err);
 			}
 		} else {
 			if (request.method == 'help') {
