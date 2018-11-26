@@ -158,7 +158,6 @@ class Context
 			var call = _methods.get(request.method);
 
 			function httpStatusErrorHandler(err) {
-				trace('got handleRpcRequest errorpipe err=${err}');
 				// If we get a special RpcErrorResponse type
 				// then make sure the error returned and the
 				// http status code are returned.
