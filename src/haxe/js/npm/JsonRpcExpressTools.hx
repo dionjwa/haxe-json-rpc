@@ -46,7 +46,11 @@ class JsonRpcExpressTools
 						}
 					};
 				res.writeHead(status);
-				res.end(stringify(rpcResponse));
+				if (status == 200) {
+					res.end(stringify(rpcResponse.result));
+				} else {
+					res.end(stringify(rpcResponse.error));
+				}
 			})
 			.catchError(function(err) {
 				next(err);
@@ -105,6 +109,8 @@ class JsonRpcExpressTools
 			if (method.alias == null) {
 				postUrl = '/${method.method.replace('.', '').replace('-', '')}';
 			}
+
+			trace('init app.post ${postUrl}');
 
 			app.post(postUrl, function(req :ExpressRequest, res :ExpressResponse, next :?Dynamic->Void) {
 				//Get all possible parameters
