@@ -37,7 +37,7 @@ class RpcHttpGetTest extends PromiseTest
 			promise.reject(err);
 		});
 
-		var port = '8082';
+		var port = '8699';
 
 		var clientConnection = new t9.remoting.jsonrpc.JsonRpcConnectionHttpGet('http://localhost:' + port);
 

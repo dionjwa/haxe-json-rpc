@@ -94,9 +94,9 @@ class Routes
 			if (requestBody != null && req.headers[untyped 'content-type'] == 'application/json') {
 				if (untyped __typeof__(requestBody) == 'string') {
 					var body :RequestDef = Json.parse(requestBody);
-					JsonRpcExpressTools.callExpressRequest(context, body, cast res, next, timeout);
+					JsonRpcExpressTools.callExpressRequest(context, body, cast res, false, next, timeout);
 				} else {
-					JsonRpcExpressTools.callExpressRequest(context, requestBody, cast res, next, timeout);
+					JsonRpcExpressTools.callExpressRequest(context, requestBody, cast res, false, next, timeout);
 				}
 			} else {
 				//Get the POST data
@@ -138,7 +138,7 @@ class Routes
 					Reflect.setField(req, 'body', content);
 					try {
 						var body :RequestDef = Json.parse(content);
-						JsonRpcExpressTools.callExpressRequest(context, body, cast res, next, timeout);
+						JsonRpcExpressTools.callExpressRequest(context, body, cast res, false, next, timeout);
 					} catch (err :Dynamic) {
 						var responseError :ResponseDef = {
 							id: JsonRpcConstants.JSONRPC_NULL_ID,

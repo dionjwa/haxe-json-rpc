@@ -51,6 +51,7 @@ class JsonRpcConnectionHttpPost
 #else
 		return callInternal(requestObj)
 			.then(function(response: ResponseDef) {
+				trace('response=${Json.stringify(response)}');
 				if (response.error != null) {
 					//Rethrow
 					throw response.error;

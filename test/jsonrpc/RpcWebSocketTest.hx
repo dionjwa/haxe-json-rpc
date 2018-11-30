@@ -27,7 +27,7 @@ class RpcWebSocketTest extends PromiseTest
 		var deferred = new Deferred();
 		var promise = deferred.promise();
 
-		var port = 8082;
+		var port = 8699;
 
 		//Server infrastructure
 		var wss = new WebSocketServer({port:port});
@@ -75,7 +75,7 @@ class RpcWebSocketTest extends PromiseTest
 		var deferred = new Deferred();
 		var promise = deferred.promise();
 
-		var port = 8082;
+		var port = 8699;
 
 		//Server infrastructure
 		var wss = new WebSocketServer({port:port});

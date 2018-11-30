@@ -41,9 +41,9 @@ class BasicsTest extends PromiseTest
 			promise.reject(err);
 		});
 
-		var port = '8082';
+		var port = '8699';
 
-		var clientConnection = new t9.remoting.jsonrpc.JsonRpcConnectionHttpPost('http://localhost:' + port);
+		var clientConnection = new t9.remoting.jsonrpc.JsonRpcConnectionHttpPost('http://localhost:' + port).debug();
 
 		httpServer.listen(port, function() {
 			clientConnection.request(Type.getClassName(jsonrpc.TestService3) + '.foo1', {input:'inputString'})

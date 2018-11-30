@@ -23,7 +23,7 @@ class RpcProxyTest extends PromiseTest
 		var deferred = new Deferred();
 		var promise = deferred.promise();
 
-		var port = '8082';
+		var port = '8699';
 
 		//Server infrastructure
 		var serverContext = new t9.remoting.jsonrpc.Context();

@@ -55,7 +55,7 @@ class TestExpressRoutes extends PromiseTest
 			}
 		});
 
-		var port = '8082';
+		var port = '8699';
 
 		var arg1 = "someStringArg";
 		var arg2 = 42;
@@ -64,8 +64,7 @@ class TestExpressRoutes extends PromiseTest
 			var url = 'http://localhost:${port}${prefix}/express-route-test/$arg1/$arg2';
 			get(url)
 				.then(function(result :String) {
-					var jsonRpcResult :ResponseDef = Json.parse(result + "");
-					assertEquals(jsonRpcResult.result, '${arg1}::${arg2}');
+					assertEquals(result, '${arg1}::${arg2}');
 					if (promise != null) {
 						promise.resolve(true);
 						promise = null;
@@ -117,7 +116,7 @@ class TestExpressRoutes extends PromiseTest
 			}
 		});
 
-		var port = '8082';
+		var port = '8699';
 
 		var arg1 = "someStringArg";
 		var arg2 = 42;
@@ -127,8 +126,7 @@ class TestExpressRoutes extends PromiseTest
 			var url = 'http://localhost:${port}${prefix}/expressroutetest2alias/$arg1/$arg2?value3=${arg3}';
 			get(url)
 				.then(function(result :String) {
-					var jsonRpcResult :ResponseDef = Json.parse(result + "");
-					assertEquals(jsonRpcResult.result, '${arg1}::${arg2}::${arg3}');
+					assertEquals(result, '${arg1}::${arg2}::${arg3}');
 					if (promise != null) {
 						promise.resolve(true);
 						promise = null;
@@ -170,7 +168,6 @@ class TestExpressRoutes extends PromiseTest
 
 		JsonRpcExpressTools.addExpressRoutes(router, context);
 
-
 		var httpServer = Http.createServer(cast app);
 
 		httpServer.on('error', function(err) {
@@ -181,7 +178,7 @@ class TestExpressRoutes extends PromiseTest
 			}
 		});
 
-		var port = '8082';
+		var port = '8699';
 
 		var arg1 = "someStringArg";
 		var arg2 = 42;
@@ -199,8 +196,7 @@ class TestExpressRoutes extends PromiseTest
 			// /$arg1/$arg2?value3=${arg3}
 			post(url, params)
 				.then(function(result :String) {
-					var jsonRpcResult :ResponseDef = Json.parse(result + "");
-					assertEquals(jsonRpcResult.result, '${arg1}::${arg2}::${arg3}');
+					assertEquals(result, '${arg1}::${arg2}::${arg3}');
 					if (promise != null) {
 						promise.resolve(true);
 						promise = null;

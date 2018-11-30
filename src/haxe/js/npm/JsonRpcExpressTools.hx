@@ -19,7 +19,7 @@ typedef RpcFunction=Dynamic->Promise<Dynamic>;
 
 class JsonRpcExpressTools
 {
-	public static function callExpressRequest(context :Context, jsonRpcReq :RequestDef, res :ExpressResponse, next :?Dynamic->Void, ?timeout :Int = 120000) :Void
+	public static function callExpressRequest(context :Context, jsonRpcReq :RequestDef, res :ExpressResponse, stripJsonRpcShell :Bool, next :?Dynamic->Void, ?timeout :Int = 120000) :Void
 	{
 		if (!context.exists(jsonRpcReq.method)) {
 			next();
@@ -46,10 +46,18 @@ class JsonRpcExpressTools
 						}
 					};
 				res.writeHead(status);
-				if (status == 200) {
-					res.end(stringify(rpcResponse.result));
+				if (stripJsonRpcShell) {
+					if (status == 200) {
+						if (untyped __typeof__(rpcResponse.result) == 'string') {
+							res.end(rpcResponse.result);
+						} else {
+							res.end(stringify(rpcResponse.result));
+						}
+					} else {
+						res.end(stringify(rpcResponse.error));
+					}
 				} else {
-					res.end(stringify(rpcResponse.error));
+					res.end(stringify(rpcResponse));
 				}
 			})
 			.catchError(function(err) {
@@ -102,15 +110,13 @@ class JsonRpcExpressTools
 					id: JsonRpcConstants.JSONRPC_NULL_ID
 				};
 
-				callExpressRequest(context, jsonRpcRequest, res, next);
+				callExpressRequest(context, jsonRpcRequest, res, true, next);
 			});
 
 			var postUrl = '/${method.alias}';
 			if (method.alias == null) {
 				postUrl = '/${method.method.replace('.', '').replace('-', '')}';
 			}
-
-			trace('init app.post ${postUrl}');
 
 			app.post(postUrl, function(req :ExpressRequest, res :ExpressResponse, next :?Dynamic->Void) {
 				//Get all possible parameters
@@ -122,7 +128,7 @@ class JsonRpcExpressTools
 					id: JsonRpcConstants.JSONRPC_NULL_ID
 				};
 
-				callExpressRequest(context, jsonRpcRequest, res, next);
+				callExpressRequest(context, jsonRpcRequest, res, true, next);
 			});
 		}
 
